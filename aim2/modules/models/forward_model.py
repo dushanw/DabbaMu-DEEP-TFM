@@ -13,11 +13,11 @@ def forward_model_singleH(X, Ht, sPSF, exPSF): #X: (m, 1, Nx, Ny), Ht: (1, 1, Nx
     yt= F.conv2d(A1, sPSF, padding= padding_spsf)
     return yt
 
-def forward_modelA(X, H, sPSF, exPSF, device, noise=False):    
+def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1):    
     output= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(device)
     for t in range(H.shape[1]):
         output[:, t:t+1, :, :]= forward_model_singleH(X, H[:,t:t+1,:,:], sPSF, exPSF)
     if noise==True:
         z= torch.randn_like(output)   
-        output = output + torch.sqrt(output)*z # sample_from_normal which is similar to poisson         
+        output = output + torch.sqrt(output/K)*z # sample_from_normal which is similar to poisson         
     return output

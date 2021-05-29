@@ -7,3 +7,19 @@ def ifft(x): #input: frequency domain ; output: spatial domain
 def fft(x): #input: spatial domain ; output: frequency domain
     x= torch.abs(torch.fft.fft(x))
     return x
+
+def fft_2d(x): #input: spatial domain ; output: frequency domain
+    x= torch.abs(torch.fft.fft2(x))
+    return x
+
+def ifft_2d(x): #input: frequency domain ; output: spatial domain
+    x= torch.abs(torch.fft.ifft2(x))
+    return x
+
+def fft_2d_with_fftshift(x): #input: spatial domain ; output: frequency domain
+    x= torch.abs(torch.fft.fftshift(torch.fft.fft2(x), dim= (2,3)))
+    return x
+def ifft_2d_with_fftshift(x): #input: frequency domain ; output: spatial domain
+    x= torch.abs(torch.fft.fftshift(torch.fft.ifft2(x), dim= (2,3)))
+    return x
+
