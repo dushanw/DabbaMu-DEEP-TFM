@@ -23,3 +23,11 @@ def ifft_2d_with_fftshift(x): #input: frequency domain ; output: spatial domain
     x= torch.abs(torch.fft.fftshift(torch.fft.ifft2(x), dim= (2,3)))
     return x
 
+def ifft_2d_with_fftshift_real(x): #input: frequency domain ; output: spatial domain
+    x_ifft2 = torch.fft.ifft2(x)
+    #print(f'ifft_converted_weights : {x_ifft2[0,0,0]}')
+    
+    x= torch.fft.fftshift(x_ifft2, dim= (2,3))
+    
+    return x.real
+

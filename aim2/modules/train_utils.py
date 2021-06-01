@@ -6,7 +6,7 @@ import numpy as np
 
 from modules.models.classifiers import classification_accuracy as accuracy
 
-def evaluate(device, loader, model, forward_modelA, modelH, classifier, sPSF, exPSF, m, noise=None, rescale=[-1, 1]):
+def evaluate(device, loader, model, forward_modelA, modelH, classifier, sPSF, exPSF, m, noise=None, rescale=[-1, 1], noise_K=1):
     if rescale!=None:rescale_mean , rescale_std = rescale
     else:rescale_mean , rescale_std= 0, 1
     
@@ -20,7 +20,7 @@ def evaluate(device, loader, model, forward_modelA, modelH, classifier, sPSF, ex
         with torch.no_grad():
             X= x.float()
             Ht= modelH(m)
-            yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise)
+            yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise, noise_K)
             X_hat = model(yt)
             
             acc_on_real.append(accuracy(y, classifier(X*rescale_std+rescale_mean)))
@@ -29,10 +29,11 @@ def evaluate(device, loader, model, forward_modelA, modelH, classifier, sPSF, ex
     return np.mean(acc_on_real), np.mean(acc_on_fake)
 
 
-def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, noise=None):
+def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, noise=None, noise_K=1):
     losses_temp = []
     opt_model, opt_H = opt
     for i, (x, y) in enumerate(loader):
+        #if i==10:break
         x= x.to(device)
         if type_ == 'train':
             model.train()
@@ -45,7 +46,7 @@ def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, 
             # train_model
             for _ in range(train_model_iter):
                 Ht= modelH(m)
-                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise)
+                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise, noise_K)
                 X_hat = model(yt)
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
@@ -54,7 +55,7 @@ def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, 
             #train H
             for _ in range(train_H_iter):
                 Ht= modelH(m)
-                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise)
+                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise, noise_K)
                 X_hat = model(yt)
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
@@ -66,7 +67,7 @@ def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, 
             with torch.no_grad():
                 X= x.float()
                 Ht= modelH(m)
-                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise)
+                yt = forward_modelA(X, Ht, sPSF, exPSF, device, noise, noise_K)
                 X_hat = model(yt)
                 loss = criterion(X_hat, X)
         losses_temp.append(loss.item())
@@ -74,7 +75,7 @@ def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, 
     losses.append(np.mean(losses_temp))
     return losses, model, opt, X, X_hat, Ht, yt, modelH
 
-def train(model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, train_loader, test_loader, device, T=5, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_epoc=1, m_inc_proc= None, save_dir= None, noise_A=None, classifier=None, rescale_for_classifier= [-1, 1]):
+def train(model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, train_loader, test_loader, device, T=5, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_epoc=1, m_inc_proc= None, save_dir= None, noise_A=None, classifier=None, rescale_for_classifier= [-1, 1], noise_K=1):
     if m_inc_proc==None:
         def m_inc_proc(m, epoch):
             return m
@@ -87,11 +88,11 @@ def train(model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, train_load
     for epoch in range(1, epochs+1):
         if epoch!=1 and epoch%m_inc_epoc==0:m= m_inc_proc(m, epoch)
         print(f'm : {m}')
-        losses_train, model, opt, X, X_hat, Ht, yt, modelH = loop(device, train_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, noise_A)
-        losses_test, model, opt, X_val, X_hat_val, Ht_val, yt_val, modelH = loop(device, test_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'test', losses_test, epoch, m, train_model_iter, train_H_iter, noise_A)
+        losses_train, model, opt, X, X_hat, Ht, yt, modelH = loop(device, train_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, noise_A, noise_K)
+        losses_test, model, opt, X_val, X_hat_val, Ht_val, yt_val, modelH = loop(device, test_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'test', losses_test, epoch, m, train_model_iter, train_H_iter, noise_A, noise_K)
         
         if classifier!=None:
-            class_acc_on_real, class_acc_on_fake = evaluate(device, test_loader, model, forward_modelA, modelH, classifier, sPSF, exPSF, m, noise_A, rescale= rescale_for_classifier)
+            class_acc_on_real, class_acc_on_fake = evaluate(device, test_loader, model, forward_modelA, modelH, classifier, sPSF, exPSF, m, noise_A, rescale= rescale_for_classifier, noise_K= noise_K)
 
         if epoch%show_results_epoch==0:
             if classifier==None:
