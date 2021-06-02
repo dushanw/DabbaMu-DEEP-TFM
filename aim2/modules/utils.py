@@ -34,8 +34,11 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     #vmax=1
     print(f'show images : X range : [{X.min()}, {X.max()}]')
     print(f'show images : X_hat range : [{X_hat.min()}, {X_hat.max()}]')
+    
     X = (X-X.min())/(X.max() - X.min())
     X_hat = torch.clamp((X_hat-X_hat.min())/(X_hat.max() - X_hat.min()), 0, 1)
+    
+    print('X.min, X.max, X_hat.min, X_hat.max (after normalization): ',X.min(), X.max(), X_hat.min(), X_hat.max())
 
     
     if T>5:T=5
@@ -45,7 +48,6 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
             os.mkdir(save_dir)
             
     idx=np.random.randint(0, len(X))
-    print(X.min(), X.max(), X_hat.min(), X_hat.max())
     plt.figure(figsize= (6, 3))
     plt.subplot(1,2,1)
     plt.imshow(X[idx,0].detach().cpu().numpy())
