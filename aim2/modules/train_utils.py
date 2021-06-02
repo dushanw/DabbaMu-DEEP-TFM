@@ -2,6 +2,7 @@
 from modules.utils import *
 from modules.custom_activations import *
 import numpy as np
+import time
 
 
 from modules.models.classifiers import classification_accuracy as accuracy
@@ -71,7 +72,7 @@ def loop(device, loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, 
                 X_hat = model(yt)
                 loss = criterion(X_hat, X)
         losses_temp.append(loss.item())
-    print(f'yt range : [{yt.min()} {yt.max()}]')
+    print(f'yt range ({type_}): [{yt.min()} {yt.max()}]')
     losses.append(np.mean(losses_temp))
     return losses, model, opt, X, X_hat, Ht, yt, modelH
 
@@ -88,9 +89,15 @@ def train(model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, train_load
     for epoch in range(1, epochs+1):
         if epoch!=1 and epoch%m_inc_epoc==0:m= m_inc_proc(m, epoch)
         print(f'm : {m}')
+        
+        start = time.time()
         losses_train, model, opt, X, X_hat, Ht, yt, modelH = loop(device, train_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, noise_A, noise_K)
+        end= time.time()
+        
         losses_test, model, opt, X_val, X_hat_val, Ht_val, yt_val, modelH = loop(device, test_loader, model, forward_modelA, modelH, sPSF, exPSF, criterion, opt, 'test', losses_test, epoch, m, train_model_iter, train_H_iter, noise_A, noise_K)
         
+        
+        print(f'training loop time (for single epoch): {end-start} sec')
         if classifier!=None:
             class_acc_on_real, class_acc_on_fake = evaluate(device, test_loader, model, forward_modelA, modelH, classifier, sPSF, exPSF, m, noise_A, rescale= rescale_for_classifier, noise_K= noise_K)
 
