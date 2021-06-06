@@ -31,3 +31,5 @@ def ifft_2d_with_fftshift_real(x): #input: frequency domain ; output: spatial do
     
     return x.real
 
+def identity(x):
+    return x
