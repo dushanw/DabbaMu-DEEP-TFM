@@ -9,7 +9,7 @@ import numpy as np
 import torch
 
 
-def concat_imgs(save_dir, epoch):
+def concat_imgs(save_dir, epoch, class_acc_on_fake=None):
     im_long = plt.imread(f'{save_dir}/{epoch}_line6_results_grids.jpg')
     
     final_img=[]
@@ -24,9 +24,14 @@ def concat_imgs(save_dir, epoch):
         idx+=1
     final_img = np.concatenate(tuple(final_img), axis=0)
 
-    plt.imsave(f'{save_dir}/{epoch}.jpg', final_img)
+    if class_acc_on_fake==None:
+        save_img_dir= f'{save_dir}/{epoch}.jpg'
+    else:
+        rounded= np.round(float(class_acc_on_fake), 3)
+        save_img_dir= f'{save_dir}/{epoch}_AccOnFake({rounded}).jpg'
+    plt.imsave(save_img_dir, final_img)
 
-    for img in glob.glob(f'{save_dir}/{epoch}_*'):
+    for img in glob.glob(f'{save_dir}/{epoch}_line*'):
         os.remove(img)
 
 def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None):
@@ -108,4 +113,4 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.show()
     
     if save_dir!=None:
-        concat_imgs(save_dir, epoch)
+        concat_imgs(save_dir, epoch, class_acc_on_fake)
