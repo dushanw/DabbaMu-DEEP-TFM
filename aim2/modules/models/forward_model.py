@@ -13,7 +13,7 @@ def forward_model_singleH(X, Ht, sPSF, exPSF): #X: (m, 1, Nx, Ny), Ht: (1, 1, Nx
     yt= F.conv2d(A1, sPSF, padding= padding_spsf)
     return yt
 
-def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1, scale_factor=1):    
+def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1, scale_factor=1, shift_lambda_real= 0):    
     lambda_= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(device)
     for t in range(H.shape[1]):
         lambda_[:, t:t+1, :, :]= forward_model_singleH(X, H[:,t:t+1,:,:], sPSF, exPSF)
@@ -24,8 +24,8 @@ def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1, scale_factor=1):
             lambda_ = F.max_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)
         print(f"downscaled lambda : {lambda_.shape}")
         
-        z= torch.randn_like(lambda_) 
-        yt = lambda_ + torch.sqrt(lambda_/K)*z 
+        z= torch.randn_like(lambda_)         
+        yt = lambda_ + (shift_lambda_real/ K) + torch.sqrt(lambda_/K + shift_lambda_real/(K**2))*z 
         yt= F.interpolate(yt, scale_factor= 2**(scale_factor-1))
         print(f"upscaled yt : {yt.shape}")
     else:yt=lambda_
