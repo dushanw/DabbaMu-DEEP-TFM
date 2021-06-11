@@ -17,14 +17,15 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None):
     for img_dir in sorted(glob.glob(f'{save_dir}/{epoch}_*')):
         im= plt.imread(img_dir)
         ones= (255*np.ones((im.shape[0], im_long.shape[1], 3))).astype('uint8')
-        if idx==0 or idx==4:ones[:im.shape[0], 30:30+im.shape[1], :]= im
-        elif idx==5:ones[:, :-30, :]= im[:, 30:, :]
-        else:ones[:im.shape[0], :im.shape[1], :]= im
+        ones[:im.shape[0], :im.shape[1], :]= im
+        #if idx==0 or idx==4:ones[:im.shape[0], :im.shape[1], :]= im
+        #elif idx==5:ones[:, :-30, :]= im[:, 30:, :]
+        #else:ones[:im.shape[0], :im.shape[1], :]= im
         final_img.append(ones)
         idx+=1
     final_img = np.concatenate(tuple(final_img), axis=0)
 
-    if class_acc_on_fake==None:
+    if class_acc_on_fake=='not calc':
         save_img_dir= f'{save_dir}/{epoch}_L1Loss({L1loss}).jpg'
     else:
         rounded= np.round(float(class_acc_on_fake), 3)

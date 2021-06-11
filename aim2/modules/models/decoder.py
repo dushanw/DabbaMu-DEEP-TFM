@@ -1,5 +1,6 @@
 
 from torch import nn
+import torch
 class simple_generator(nn.Module):
     def __init__(self, T, img_size=32):
         super(simple_generator, self).__init__()
@@ -29,12 +30,13 @@ class conv_relu_block(nn.Module):
     
     
 class genv1(nn.Module):
-    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1]):
+    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None):
         super(genv1, self).__init__()
         self.T= T
         self.img_size= img_size
         self.img_channels=img_channels
         self.channel_list= channel_list
+        self.last_activation= last_activation
         
         self.convrelu_blocks: nn.ModuleList[conv_relu_block] = nn.ModuleList()
             
@@ -50,4 +52,8 @@ class genv1(nn.Module):
         for i in range(len(self.convrelu_blocks)):
             x= self.convrelu_blocks[i](x)
         
-        return x.view(-1, self.img_channels, self.img_size, self.img_size)
+        out= x.view(-1, self.img_channels, self.img_size, self.img_size)
+        
+        if self.last_activation=='sigmoid':out= torch.sigmoid(out)
+        
+        return out
