@@ -13,11 +13,20 @@ def forward_model_singleH(X, Ht, sPSF, exPSF): #X: (m, 1, Nx, Ny), Ht: (1, 1, Nx
     yt= F.conv2d(A1, sPSF, padding= padding_spsf)
     return yt
 
-def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1):    
-    output= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(device)
+def forward_modelA(X, H, sPSF, exPSF, device, noise=False, K=1, scale_factor=1):    
+    lambda_= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(device)
     for t in range(H.shape[1]):
-        output[:, t:t+1, :, :]= forward_model_singleH(X, H[:,t:t+1,:,:], sPSF, exPSF)
+        lambda_[:, t:t+1, :, :]= forward_model_singleH(X, H[:,t:t+1,:,:], sPSF, exPSF)
+        
+        
     if noise==True:
-        z= torch.randn_like(output)   
-        output = output + torch.sqrt(output/K)*z # sample_from_normal which is similar to poisson         
-    return output
+        for _ in range(scale_factor-1):
+            lambda_ = F.max_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)
+        print(f"downscaled lambda : {lambda_.shape}")
+        
+        z= torch.randn_like(lambda_) 
+        yt = lambda_ + torch.sqrt(lambda_/K)*z 
+        yt= F.interpolate(yt, scale_factor= 2**(scale_factor-1))
+        print(f"upscaled yt : {yt.shape}")
+    else:yt=lambda_
+    return yt
