@@ -11,21 +11,38 @@ import torch
 
 def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None):
     im_long = plt.imread(f'{save_dir}/{epoch}_line6_results_grids.jpg')
+    imgs=[]
+    max_width=0
+    cummulative_heights=[0]
+    widths=[]
+    img_dir_list= glob.glob(f'{save_dir}/{epoch}_*')
+    for img_dir in sorted(img_dir_list):
+        img = plt.imread(img_dir)
+        imgs.append(img)
+        height, width = img.shape[0], img.shape[1]
+        #plt.imshow(img)
+        #plt.title(f'height: {height}, width : {width}')
+        #plt.show()
+        
+        if width>max_width:max_width= width
+        cummulative_heights.append(cummulative_heights[-1] + height)
+        widths.append(width)
     
-    final_img=[]
-    idx=0
-    for img_dir in sorted(glob.glob(f'{save_dir}/{epoch}_*')):
-        im= plt.imread(img_dir)
-        ones= (255*np.ones((im.shape[0], im_long.shape[1], 3))).astype('uint8')
-        ones[:im.shape[0], :im.shape[1], :]= im
-        #if idx==0 or idx==4:ones[:im.shape[0], :im.shape[1], :]= im
-        #elif idx==5:ones[:, :-30, :]= im[:, 30:, :]
-        #else:ones[:im.shape[0], :im.shape[1], :]= im
-        final_img.append(ones)
-        idx+=1
-    final_img = np.concatenate(tuple(final_img), axis=0)
+    final_img= (255*np.ones((cummulative_heights[-1], max_width, 3))).astype('uint8')
+    #print(cummulative_heights)
+    for i in range(len(cummulative_heights)-1):
+        #if not i==4:img= torch.ones_like(torch.tensor(imgs[i])).numpy()
+        #else:img= imgs[i]
+        img= imgs[i]
+        final_img[cummulative_heights[i]:cummulative_heights[i+1], 0:widths[i]]= img
+        
+    plt.figure(figsize= (15, 10))
+    plt.imshow(final_img)
+    plt.title(f'after {epoch} epochs')
+    plt.show()
+    
 
-    if class_acc_on_fake=='not calc':
+    if class_acc_on_fake=='NA':
         save_img_dir= f'{save_dir}/{epoch}_L1Loss({L1loss}).jpg'
     else:
         rounded= np.round(float(class_acc_on_fake), 3)
@@ -35,20 +52,18 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None):
     for img in glob.glob(f'{save_dir}/{epoch}_line*'):
         os.remove(img)
 
-def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None):
+def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None, m=1):
     #vmin=0
     #vmax=1
-    print(f'show images : X range : [{X.min()}, {X.max()}]')
-    print(f'show images : X_hat range : [{X_hat.min()}, {X_hat.max()}]')
+    print(f'before normalizaton: show images : X range : [{X.min()}, {X.max()}] | X_hat range : [{X_hat.min()}, {X_hat.max()}]')
     
     X = (X-X.min())/(X.max() - X.min())
     X_hat = torch.clamp((X_hat-X_hat.min())/(X_hat.max() - X_hat.min()), 0, 1)
     
-    print('X.min, X.max, X_hat.min, X_hat.max (after normalization): ',X.min(), X.max(), X_hat.min(), X_hat.max())
-
+    print(f'after normalization: show images : X range : [{X.min()}, {X.max()}] | X_hat range : [{X_hat.min()}, {X_hat.max()}]')
     
     if T>5:T=5
-    if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'not calc', 'not calc'
+    if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'NA', 'NA'
     if save_dir!=None:
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
@@ -61,9 +76,11 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.subplot(1,2,2)
     plt.imshow(X_hat[idx,0].detach().cpu().numpy())
     plt.title('generated')
+    plt.suptitle(f'm : {m}')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line1_real_gen.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     plt.figure(figsize= (2*T, 2))
     for t in range(T):
         plt.subplot(1,T, t+1)
@@ -71,7 +88,8 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.suptitle('Ht')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line2_ht.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     plt.figure(figsize= (2*T, 2))
     for t in range(T):
         plt.subplot(1,T, t+1)
@@ -79,7 +97,8 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.suptitle('Ht > 0.5')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line3_ht_comp.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     plt.figure(figsize= (2*T, 2))
     for t in range(T):
         plt.subplot(1,T, t+1)
@@ -87,16 +106,19 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.suptitle('yt')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line4_yt.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     
-
+    
+    plt.figure()
     plt.plot(losses_train, label= 'train loss')
     plt.plot(losses_test, label= 'test loss')
     plt.legend()
     plt.title(f'losses after {epoch} epochs ...: final loss: {losses_test[-1]}')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line5_losses.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     
     img_grid_fake=torchvision.utils.make_grid(X_hat).permute(1,2,0).cpu().detach().numpy()
     img_grid_real=torchvision.utils.make_grid(X).permute(1,2,0).cpu().detach().numpy()
@@ -104,14 +126,15 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     plt.figure(figsize=(15,3)) #(length, height)
     plt.subplot(1,2,1)
     plt.imshow(img_grid_real)
-    plt.title(f'real -> classification_acc : {class_acc_on_real}')
+    plt.title(f'real -> class_acc : {class_acc_on_real} | L1Loss : {np.round(losses_test[-1], 3)}')
     plt.subplot(1,2,2)
     plt.imshow(img_grid_fake)
-    plt.title(f'fake -> classification_acc :  {class_acc_on_fake}')
+    plt.title(f'fake -> class_acc :  {class_acc_on_fake} | L1Loss : {np.round(losses_test[-1], 3)}')
     plt.suptitle(f'results after {epoch} epochs ... ')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line6_results_grids.jpg')
-    plt.show()
+        plt.close()
+    else:plt.show()
     
     if save_dir!=None:
         concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_test[-1], 3))

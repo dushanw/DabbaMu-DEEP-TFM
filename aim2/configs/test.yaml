@@ -16,7 +16,7 @@ TRAIN:
   epochs: 10
   m_inc_proc: 'inc_1_after_60_interval_10'
   show_results_epoch: 1
-  train_model_iter: 0
+  train_model_iter: 1
   train_H_iter: 1
   criterion: 'nn.L1Loss().to(device)'  
   classifier: None
@@ -25,13 +25,13 @@ TRAIN:
 
 MODEL:
   MODEL_H:
-    T: 16
+    T: 5
     H_weight_preprocess: 'ifft_2d_with_fftshift_real'
     H_init: 'fft'
     H_complex_init: False
     initialization_bias: 0
     H_activation: 'sigmoid_custom'
-    lr_H: 100
+    lr_H: 100.0
     enable_train: True
 
   MODEL_A:
@@ -39,11 +39,11 @@ MODEL:
     exPSF: 'torch.tensor(get_gaussian(side_len=5, s=1)).float().to(device)'
     noise: True
     scale_factor: 1
-    rotation_lambda: 1000
-    shift_lambda_real: 0
+    rotation_lambda: 1000.0
+    shift_lambda_real: 0.0
 
   MODEL_DECODER:
-    channel_list: [12, 10, 4, 3, 2]
+    channel_list: [4, 3, 2]
     lr_decoder: 0.001
     last_activation: None
 

@@ -15,12 +15,7 @@ from modules.train_utils import train
 from modules.models.forward_model import modelA_class
 from modules.models.forward_H import modelH_class
 from modules.models.decoder import genv1
-
-
-def inc_1_after_60_interval_10(m, epoch):
-    if epoch>60 and epoch%10==0:
-        m=inc_m(m, epoch, 1)
-    return m
+from modules.m_inc_procs import *
 
 def run(config_file=None, opts=None):
     cfg = get_cfg_defaults()
@@ -54,7 +49,7 @@ def run(config_file=None, opts=None):
     show_results_epoch= cfg.TRAIN.show_results_epoch
     train_model_iter= cfg.TRAIN.train_model_iter
     train_H_iter= cfg.TRAIN.train_H_iter
-    criterion= eval(cfg.TRAIN.criterion)
+    criterion= eval(cfg.TRAIN.criterion) # defined below after defining models
     classifier=cfg.TRAIN.classifier
     rescale_for_classifier=cfg.TRAIN.rescale_for_classifier
 
@@ -108,6 +103,12 @@ def run(config_file=None, opts=None):
     modelA= modelA_class(sPSF= sPSF, exPSF= exPSF, noise=noise, device = device, scale_factor=scale_factor, rotation_lambda=rotation_lambda, shift_lambda_real= shift_lambda_real)
     decoder= genv1(T, img_size, img_channels, channel_list, last_activation).to(device)
 
+    
+    ###
+    #def test_loss_for_H(_,__):return torch.abs(modelH()-torch.ones_like(modelH())).sum()
+    #criterion= eval(cfg.TRAIN.criterion)
+    ###
+    
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)
     opt_decoder= torch.optim.Adam(decoder.parameters(), lr= lr_decoder)
     ###

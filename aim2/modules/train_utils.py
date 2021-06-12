@@ -107,4 +107,4 @@ def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_lo
         if epoch%show_results_epoch==0:
             if classifier==None:
                 class_acc_on_real, class_acc_on_fake=None, None
-            show_imgs(X_val, Ht_val, X_hat_val, yt_val, losses_train, losses_test, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir)            
+            show_imgs(X_val, Ht_val, X_hat_val, yt_val, losses_train, losses_test, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m)            

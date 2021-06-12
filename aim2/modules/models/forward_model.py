@@ -35,7 +35,7 @@ class modelA_class:
 
         if self.noise==True:
             for _ in range(self.scale_factor-1):
-                lambda_ = F.max_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)
+                lambda_ = F.avg_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)*4
             z= torch.randn_like(lambda_)         
             yt = lambda_ + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
             yt= F.interpolate(yt, scale_factor= 2**(self.scale_factor-1))
