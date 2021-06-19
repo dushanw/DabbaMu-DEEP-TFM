@@ -76,7 +76,7 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
     losses.append(np.mean(losses_temp))
     return losses, model_decoder, opt, X, X_hat, Ht, yt, model_H
 
-def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1]):
+def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
     
     T= model_H.T
     
@@ -107,4 +107,13 @@ def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_lo
         if epoch%show_results_epoch==0:
             if classifier==None:
                 class_acc_on_real, class_acc_on_fake=None, None
-            show_imgs(X_val, Ht_val, X_hat_val, yt_val, losses_train, losses_test, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m)            
+            show_imgs(X_val, Ht_val, X_hat_val, yt_val, losses_train, losses_test, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m) 
+            
+            if save_special_bool==True:
+                save_special_dir= f'{save_dir}/save_special'
+                try:os.mkdir(save_special_dir)
+                except:pass
+                
+                save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, f'{save_dir}/save_special')
+            
+            

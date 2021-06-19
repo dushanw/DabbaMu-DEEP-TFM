@@ -17,7 +17,7 @@ from modules.models.forward_H import modelH_class
 from modules.models.decoder import genv1
 from modules.m_inc_procs import *
 
-def run(config_file=None, opts=None):
+def run(config_file=None, opts=None, save_special=False):
     cfg = get_cfg_defaults()
     
     if config_file!=None:
@@ -113,4 +113,4 @@ def run(config_file=None, opts=None):
     opt_decoder= torch.optim.Adam(decoder.parameters(), lr= lr_decoder)
     ###
 
-    train(decoder, modelA, modelH, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier)
+    train(decoder, modelA, modelH, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)

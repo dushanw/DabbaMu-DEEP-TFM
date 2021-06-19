@@ -138,3 +138,10 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_test,T, epoch, class_acc_on
     
     if save_dir!=None:
         concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_test[-1], 3))
+        
+        
+def save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, save_dir):
+    np.save(f'{save_dir}/{epoch}_X_val.npy', X_val.detach().cpu().numpy())
+    np.save(f'{save_dir}/{epoch}_Ht_val.npy', Ht_val.detach().cpu().numpy())
+    np.save(f'{save_dir}/{epoch}_X_hat_val.npy', X_hat_val.detach().cpu().numpy())
+    np.save(f'{save_dir}/{epoch}_yt_val.npy', yt_val.detach().cpu().numpy())
