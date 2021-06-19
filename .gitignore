@@ -3,3 +3,5 @@ saved_models
 datasets
 .ipynb_checkpoints
 __pycache__
+figures_to_poster
+errors.txt

@@ -15,9 +15,9 @@ _C.DATASET.batch_size= 32
 _C.DATASET.img_channels=1
 
 _C.TRAIN = CN()
-_C.TRAIN.epochs=100
-_C.TRAIN.m_inc_proc =  'inc_m_class(epoch_threshold= 30, epoch_steps= 8)'
-_C.TRAIN.show_results_epoch=1
+_C.TRAIN.epochs=150
+_C.TRAIN.m_inc_proc =  'inc_m_class(epoch_threshold= 80, epoch_steps= 10)'
+_C.TRAIN.show_results_epoch=5
 _C.TRAIN.train_model_iter= 1
 _C.TRAIN.train_H_iter= 1
 _C.TRAIN.criterion= 'nn.L1Loss().to(device)'  #test_loss_for_H
