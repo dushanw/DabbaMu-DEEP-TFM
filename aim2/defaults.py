@@ -47,7 +47,7 @@ _C.MODEL.MODEL_A.shift_lambda_real=10.0
 _C.MODEL.MODEL_DECODER = CN()
 _C.MODEL.MODEL_DECODER.channel_list=[24, 12, 8, 4, 2]
 _C.MODEL.MODEL_DECODER.lr_decoder= 0.001
-_C.MODEL.MODEL_DECODER.last_activation=None #'sigmoid'
+_C.MODEL.MODEL_DECODER.last_activation='sigmoid'
 
 
 

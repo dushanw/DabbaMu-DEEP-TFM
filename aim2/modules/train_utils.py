@@ -115,5 +115,7 @@ def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_lo
                 except:pass
                 
                 save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, f'{save_dir}/save_special')
+                
+        
             
             
