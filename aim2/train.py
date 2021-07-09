@@ -8,7 +8,7 @@ from defaults import get_cfg_defaults
 
 from modules.models.preprocess_H_weights import ifft_2d_with_fftshift_real
 from modules.custom_activations import sigmoid_custom
-from modules.kernels import get_gaussian
+from modules.kernels import *
 from modules.data import mnistgrid_getdataset
 from modules.train_utils import train
 
