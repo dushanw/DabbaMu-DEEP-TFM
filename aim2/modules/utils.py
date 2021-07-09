@@ -44,10 +44,14 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None, metric_mse
     
 
     if class_acc_on_fake=='NA':
-        save_img_dir= f'{save_dir}/{epoch}_L1Loss({L1loss})_MSE({metric_mse})_SSIM({metric_ssim}).jpg'
+        save_img_dir= f'{save_dir}/{epoch}_L1Loss({L1loss})_MSE({metric_mse})'
+        for key, val in metric_ssim.items():
+            save_img_dir += f'_SSIM{key}({val})'
+        save_img_dir += '.jpg'
     else:
         rounded= np.round(float(class_acc_on_fake), 3)
-        save_img_dir= f'{save_dir}/{epoch}_AccOnFake({rounded})_L1Loss({L1loss})_MSE({metric_mse})_SSIM({metric_ssim}).jpg'
+        ssim11= metric_ssim['11']
+        save_img_dir= f'{save_dir}/{epoch}_AccOnFake({rounded})_L1Loss({L1loss})_MSE({metric_mse})_SSIM({ssim11}).jpg'
     plt.imsave(save_img_dir, final_img)
 
     for img in glob.glob(f'{save_dir}/{epoch}_line*'):
@@ -65,8 +69,11 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val,T, epoch, class_acc_on_
         X_hat = torch.clamp((X_hat-X_hat.min())/(X_hat.max() - X_hat.min()), 0, 1)
         print(f'after normalization: show images : X range : [{X.min()}, {X.max()}] | X_hat range : [{X_hat.min()}, {X_hat.max()}]')
     
-    metric_ssim = np.round(ssim_ignite(X_hat, X), 3)
-    metric_mse = np.round( mse_distance(X_hat, X), 3)
+    metric_ssim1 = np.round(ssim_ignite(X_hat, X, k=11), 7)
+    metric_ssim2 = np.round(ssim_ignite(X_hat, X, k=5), 7)
+    metric_ssim= {'11':metric_ssim1, '5':metric_ssim2}
+    
+    metric_mse = np.round( mse_distance(X_hat, X), 7)
     
     if T>5:T=5
     if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'NA', 'NA'
@@ -135,7 +142,8 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val,T, epoch, class_acc_on_
     #plt.title(f'L1Loss : {np.round(losses_val[-1], 3)} | MSE : {metric_mse} | SSIM | {metric_ssim}')
     plt.subplot(1,2,2)
     plt.imshow(img_grid_fake)
-    plt.title(f'L1Loss : {np.round(losses_val[-1], 3)} | MSE : {metric_mse} | SSIM | {metric_ssim}')
+    ssim11= metric_ssim['11']
+    plt.title(f'L1Loss : {np.round(losses_val[-1], 5)} | MSE : {np.round(metric_mse, 5)} | SSIM(k=11) | {np.round(ssim11, 5)}')
     plt.suptitle(f'results after {epoch} epochs ... ')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line6_results_grids.jpg')
@@ -143,7 +151,7 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val,T, epoch, class_acc_on_
     else:plt.show()
     
     if save_dir!=None:
-        concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_val[-1], 3), metric_mse, metric_ssim)
+        concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_val[-1], 7), metric_mse, metric_ssim)
         
         
 def save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, save_dir):
