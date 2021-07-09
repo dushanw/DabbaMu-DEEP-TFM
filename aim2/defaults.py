@@ -37,8 +37,8 @@ _C.MODEL.MODEL_H.lr_H= 100.0
 _C.MODEL.MODEL_H.enable_train=True
 
 _C.MODEL.MODEL_A = CN()
-_C.MODEL.MODEL_A.sPSF= 'torch.tensor(get_gaussian(side_len=5, s=1)).float().to(device)'
-_C.MODEL.MODEL_A.exPSF= 'torch.tensor(get_gaussian(side_len=5, s=1)).float().to(device)'
+_C.MODEL.MODEL_A.sPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
+_C.MODEL.MODEL_A.exPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.noise=True
 _C.MODEL.MODEL_A.scale_factor=1 # downsample
 _C.MODEL.MODEL_A.rotation_lambda=1000.0
