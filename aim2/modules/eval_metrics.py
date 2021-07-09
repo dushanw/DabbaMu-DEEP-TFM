@@ -12,9 +12,8 @@ def ssim_custom_lib(X_hat, X):
     data_range= 1.0
     return ssim(X, X_hat, data_range=data_range, size_average=False).mean().item()
     
-def ssim_ignite(X_hat, X):
-    data_range= 1.0
-    metric = SSIM_IGNITE(data_range)
+def ssim_ignite(X_hat, X, k= 11):
+    metric = SSIM_IGNITE(data_range = 1.0, kernel_size= (k,k))
     metric.update((X_hat, X))
     return metric.compute().item()
     
