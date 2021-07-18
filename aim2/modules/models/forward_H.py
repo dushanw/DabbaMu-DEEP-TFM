@@ -12,6 +12,9 @@ class modelH_class(nn.Module):
         elif init_method == 'fft':
             init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.float32)
             init_weights = torch.fft.fft2(init_weights)
+        elif init_method == 'fft_uniform_unity':
+            init_weights = torch.ones((1, T, img_size, img_size), dtype= torch.float32)
+            init_weights = torch.fft.fft2(init_weights)
 
         
         self.T= T
