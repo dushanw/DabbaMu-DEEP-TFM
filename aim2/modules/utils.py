@@ -57,7 +57,7 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None, metric_mse
     for img in glob.glob(f'{save_dir}/{epoch}_line*'):
         os.remove(img)
 
-def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val,T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None, m=1):
+def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None, m=1):
     #vmin=0
     #vmax=1
     
@@ -68,13 +68,14 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val,T, epoch, class_acc_on_
         X = (X-X.min())/(X.max() - X.min()) 
         X_hat = torch.clamp((X_hat-X_hat.min())/(X_hat.max() - X_hat.min()), 0, 1)
         print(f'after normalization: show images : X range : [{X.min()}, {X.max()}] | X_hat range : [{X_hat.min()}, {X_hat.max()}]')
+
+        
+    metric_ssim11 = np.round(metrics_val['ssim11'][-1], 7)
+    metric_ssim5 = np.round(metrics_val['ssim5'][-1], 7)
+    metric_ssim= {'11':metric_ssim11, '5':metric_ssim5}
     
-    metric_ssim1 = np.round(ssim_ignite(X_hat, X, k=11), 7)
-    metric_ssim2 = np.round(ssim_ignite(X_hat, X, k=5), 7)
-    metric_ssim= {'11':metric_ssim1, '5':metric_ssim2}
-    
-    metric_mse = np.round( mse_distance(X_hat, X), 7)
-    
+    metric_mse = np.round(metrics_val['mse'][-1], 7)
+        
     if T>5:T=5
     if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'NA', 'NA'
     if save_dir!=None:
