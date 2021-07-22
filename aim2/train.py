@@ -14,7 +14,7 @@ from modules.train_utils import train
 
 from modules.models.forward_model import modelA_class
 from modules.models.forward_H import modelH_class
-from modules.models.decoder import genv1
+from modules.models.decoder import *
 from modules.m_inc_procs import *
 
 def run(config_file=None, opts=None, save_special=False):
@@ -40,7 +40,7 @@ def run(config_file=None, opts=None, save_special=False):
     #dataset params
     img_size= cfg.DATASET.img_size
     delta=cfg.DATASET.delta
-    batch_size= cfg.DATASET.batch_size
+    batch_size_train= cfg.DATASET.batch_size_train
     img_channels= cfg.DATASET.img_channels
 
     # train params:
@@ -72,6 +72,7 @@ def run(config_file=None, opts=None, save_special=False):
     shift_lambda_real=cfg.MODEL.MODEL_A.shift_lambda_real
 
     ## decoder params:
+    decoder_name= eval(cfg.MODEL.MODEL_DECODER.name)
     channel_list=cfg.MODEL.MODEL_DECODER.channel_list
     lr_decoder= cfg.MODEL.MODEL_DECODER.lr_decoder
     last_activation=cfg.MODEL.MODEL_DECODER.last_activation #'sigmoid'
@@ -85,11 +86,10 @@ def run(config_file=None, opts=None, save_special=False):
         with redirect_stdout(f): print(cfg.dump())
 
     ########################################################################
-
-
-    train_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'train', delta), batch_size=batch_size, shuffle=True, drop_last= True)
-    val_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'val', delta), batch_size=batch_size, shuffle=True, drop_last= True)
-    test_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'test', delta), batch_size=batch_size, shuffle=True, drop_last= True)
+    
+    train_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'train', delta), batch_size=batch_size_train, shuffle=True, drop_last= True)
+    val_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'val', delta), batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
+    test_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'test', delta), batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
 
     x, y= next(iter(train_loader))
     vmin= x.min().item()
@@ -97,11 +97,18 @@ def run(config_file=None, opts=None, save_special=False):
     print('dataset value range : ',vmin, vmax)
 
     torch.manual_seed(torch_seed)
-
     ###
-    modelH = modelH_class(T=T, img_size = img_size, preprocess_H_weights= H_weight_preprocess, complex_init=H_complex_init, device = device, initialization_bias=initialization_bias, activation = H_activation, init_method= H_init, enable_train=enable_train).to(device)
-    modelA= modelA_class(sPSF= sPSF, exPSF= exPSF, noise=noise, device = device, scale_factor=scale_factor, rotation_lambda=rotation_lambda, shift_lambda_real= shift_lambda_real)
-    decoder= genv1(T, img_size, img_channels, channel_list, last_activation).to(device)
+    modelH = modelH_class(T=T, img_size = img_size, preprocess_H_weights= H_weight_preprocess, 
+                          complex_init=H_complex_init, device = device, 
+                          initialization_bias=initialization_bias, 
+                          activation = H_activation, init_method= H_init, 
+                          enable_train=enable_train, lambda_scale_factor= scale_factor).to(device)
+    
+    modelA= modelA_class(sPSF= sPSF, exPSF= exPSF, noise=noise, device = device, 
+                         scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
+                         shift_lambda_real= shift_lambda_real)
+    
+    decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation).to(device)
 
     
     ###
