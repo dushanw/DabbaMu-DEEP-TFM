@@ -5,3 +5,5 @@ datasets
 __pycache__
 figures_to_poster
 errors.txt
+heatmaps_mat_files.zip
+numpy_to_mat.ipynb
