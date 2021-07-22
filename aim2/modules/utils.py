@@ -82,7 +82,7 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
         if not os.path.isdir(save_dir):
             os.mkdir(save_dir)
             
-    idx=np.random.randint(0, len(X))
+    idx=1 #np.random.randint(0, len(X))
     plt.figure(figsize= (6, 3))
     plt.subplot(1,2,1)
     plt.imshow(X[idx,0].detach().cpu().numpy())
