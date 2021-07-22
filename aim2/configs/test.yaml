@@ -9,7 +9,7 @@ GENERAL:
 DATASET:
   img_size: 32
   delta: 0.000001
-  batch_size: 32
+  batch_size_train: 32
   img_channels: 1
 
 TRAIN:
@@ -43,6 +43,7 @@ MODEL:
     shift_lambda_real: 0.0
 
   MODEL_DECODER:
+    name: 'genv1'
     channel_list: [4, 3, 2]
     lr_decoder: 0.001
     last_activation: None

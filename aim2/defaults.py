@@ -11,7 +11,7 @@ _C.GENERAL.save_dir = 'figs/test'
 _C.DATASET = CN()
 _C.DATASET.img_size= 32
 _C.DATASET.delta=0.000001
-_C.DATASET.batch_size= 32
+_C.DATASET.batch_size_train= 32
 _C.DATASET.img_channels=1
 
 _C.TRAIN = CN()
@@ -45,6 +45,7 @@ _C.MODEL.MODEL_A.rotation_lambda=1000.0
 _C.MODEL.MODEL_A.shift_lambda_real=10.0
 
 _C.MODEL.MODEL_DECODER = CN()
+_C.MODEL.MODEL_DECODER.name= 'genv1'
 _C.MODEL.MODEL_DECODER.channel_list=[24, 12, 8, 4, 2]
 _C.MODEL.MODEL_DECODER.lr_decoder= 0.001
 _C.MODEL.MODEL_DECODER.last_activation='sigmoid'
