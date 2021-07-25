@@ -7,3 +7,6 @@ figures_to_poster
 errors.txt
 heatmaps_mat_files.zip
 numpy_to_mat.ipynb
+
+!example_train_cuda0.ipynb
+example_train_cuda*.ipynb
