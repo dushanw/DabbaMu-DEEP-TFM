@@ -24,7 +24,7 @@ class modelH_class(nn.Module):
             init_weights = torch.fft.fft2(init_weights)
         
         elif init_method == 'hadamard_FourierBased':
-            init_weights = hadamard_rescaled(T, img_size, lambda_scale_factor) # returns {0, 1} torch tensor with shape: (1, T, img_size, img_size)
+            init_weights = hadamard_norescale(T, img_size, lambda_scale_factor) # returns {0, 1} torch tensor with shape: (1, T, img_size, img_size)
             init_weights = torch.fft.fft2(init_weights)
             
         
