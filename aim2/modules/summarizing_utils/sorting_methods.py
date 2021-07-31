@@ -21,10 +21,10 @@ def heatmap_sort_function(heatmap_dir):
         attr_value= attr.split('(')[1][:-1]
         try:values.append(float(attr_value)) # float values
         except:
-            try:values.append(attr_value) # string/ etc values                
+            try:values.append(list(map(float, eval(attr_value)))) # list of float
             except:
-                try:values.append(list(map(float, eval(attr_value)))) # list of float
-                except:values.append(list(eval(attr_value))) #list of strings/ etc
+                try:values.append(list(eval(attr_value))) #list of strings/ etc
+                except:values.append(attr_value) # string/ etc values           
                 
     values.append(metric)
     values.reverse()
