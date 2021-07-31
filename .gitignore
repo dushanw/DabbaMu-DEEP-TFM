@@ -8,5 +8,4 @@ errors.txt
 heatmaps_mat_files.zip
 numpy_to_mat.ipynb
 
-!example_train_cuda0.ipynb
-example_train_cuda*.ipynb
+aim2/current_exps_notebooks/example_train_*.ipynb
