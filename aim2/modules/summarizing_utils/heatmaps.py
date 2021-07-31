@@ -57,9 +57,9 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
             for img_dir in interested_imgs:
                 if f'{interested_key1}({ax1_vals})' in img_dir and f'{interested_key2}({ax2_vals})' in img_dir:valid_img_dirs.append(img_dir)
 
+            assert len(valid_img_dirs)==1, "Multiple directories found for same attr combination (multiple values for one entry of heatmap). Check and add entry to 'override_dict' !!!"
 
-            sorted_valid_img_dirs= sorted(valid_img_dirs, key= imgdir2metric)
-            #print(sorted_valid_img_dirs)
+            sorted_valid_img_dirs= sorted(valid_img_dirs, key= imgdir2metric)            
             selected_img_dir = sorted_valid_img_dirs[0]
 
             metric_dict = get_metric(selected_img_dir)
@@ -132,7 +132,7 @@ def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list,
     attr_dict_highlrH['lr_H']= ['1.0']
     
     print(f'attr_dict_highlrH : {attr_dict_highlrH}')
-    print(f'attr_dict_highlrH : {attr_dict_lowlrH}')
+    print(f'attr_dict_lowlrH : {attr_dict_lowlrH}')
         
     print('ploting heatmaps ... ')
     
