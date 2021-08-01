@@ -29,23 +29,22 @@ _C.MODEL= CN()
 _C.MODEL.MODEL_H = CN()
 _C.MODEL.MODEL_H.T= 5
 _C.MODEL.MODEL_H.H_weight_preprocess= 'ifft_2d_with_fftshift_real'
-_C.MODEL.MODEL_H.H_init = 'fft'
-_C.MODEL.MODEL_H.H_complex_init= False #override by H_init
+_C.MODEL.MODEL_H.H_init = 'randn'
 _C.MODEL.MODEL_H.initialization_bias=0
 _C.MODEL.MODEL_H.H_activation= 'sigmoid_custom'
 _C.MODEL.MODEL_H.lr_H= 100.0
-_C.MODEL.MODEL_H.enable_train=True
 
 _C.MODEL.MODEL_A = CN()
 _C.MODEL.MODEL_A.sPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.exPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.noise=True
-_C.MODEL.MODEL_A.scale_factor=1 # downsample
+_C.MODEL.MODEL_A.lambda_scale_factor=1 # downsample
 _C.MODEL.MODEL_A.rotation_lambda=1000.0
 _C.MODEL.MODEL_A.shift_lambda_real=10.0
 
 _C.MODEL.MODEL_DECODER = CN()
 _C.MODEL.MODEL_DECODER.name= 'genv1'
+_C.MODEL.MODEL_DECODER.upsample_net= 'bicubic_interp' ## define in modules.models.decoder_upsampling_nets
 _C.MODEL.MODEL_DECODER.channel_list=[24, 12, 8, 4, 2]
 _C.MODEL.MODEL_DECODER.lr_decoder= 0.001
 _C.MODEL.MODEL_DECODER.last_activation='sigmoid'

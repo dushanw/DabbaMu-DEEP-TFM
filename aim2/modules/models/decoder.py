@@ -1,6 +1,8 @@
 
 from torch import nn
 import torch
+from modules.models.decoder_support_blocks import *
+
 class simple_generator(nn.Module):
     def __init__(self, T, img_size=32):
         super(simple_generator, self).__init__()
@@ -18,95 +20,26 @@ class simple_generator(nn.Module):
         x= x.view(-1, self.T, self.img_size, self.img_size)
         return self.model(x).view(-1, 1, self.img_size, self.img_size)
     
-    
-class conv_relu_block(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, padding, stride):
-        super(conv_relu_block, self).__init__()
-        self.seq= nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size= kernel_size, padding=padding, stride=stride),
-                nn.ReLU(),
-                nn.BatchNorm2d(out_channels))
-    def forward(self, x):
-        return self.seq(x)
-    
 
-class conv_bn_block(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, padding, stride):
-        super(conv_bn_block, self).__init__()
-        self.seq= nn.Sequential(
-                nn.Conv2d(in_channels, out_channels, kernel_size= kernel_size, padding=padding, stride=stride),
-                nn.BatchNorm2d(out_channels))
-    def forward(self, x):
-        return self.seq(x)
-    
-class ResNet_block_v1(nn.Module):
-    def __init__(self, in_channels, out_channels):
-        super(ResNet_block_v1,self).__init__()
-        
-        mid_channels= in_channels
-        self.resblock = nn.Sequential(
-            nn.Conv2d(in_channels=in_channels,out_channels=mid_channels,kernel_size=3,padding=1),
-            nn.BatchNorm2d(mid_channels),
-            nn.ReLU(),
-            nn.Conv2d(in_channels=mid_channels,out_channels=in_channels,kernel_size=3,padding=1),
-            nn.BatchNorm2d(in_channels),
-            nn.ReLU())
-        
-        self.conv_block = conv_bn_block(in_channels, out_channels, kernel_size= 3, padding=1, stride=1)
-    def forward(self,x):
-        res_out= self.resblock(x) + x
-        out = self.conv_block(res_out)
-        return out #no activation 
-    
-class genv1(nn.Module):
-    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None):
-        super(genv1, self).__init__()
+class base_decoder(nn.Module):
+    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None, decoder_block=None, upsampling_net= None):
+        super(base_decoder, self).__init__()
         self.T= T
         self.img_size= img_size
         self.img_channels=img_channels
         self.channel_list= channel_list
         self.last_activation= last_activation
         
-        self.convrelu_blocks: nn.ModuleList[conv_relu_block] = nn.ModuleList()
-            
-        
-        self.convrelu_blocks.append(conv_relu_block(self.T, self.channel_list[0], kernel_size= 3, stride= 1, padding=1))
-        
-        for idx in range(1, len(self.channel_list)):
-            self.convrelu_blocks.append(conv_relu_block(self.channel_list[idx-1], self.channel_list[idx], kernel_size= 3, stride= 1, padding=1))
-
-        self.last_layer = nn.Conv2d(in_channels=self.channel_list[-1], out_channels=self.img_channels, kernel_size= 3, stride= 1, padding=1)
-    
-    def forward(self, x):
-        x= x.view(-1, self.T, self.img_size, self.img_size)
-        
-        for i in range(len(self.convrelu_blocks)):
-            x= self.convrelu_blocks[i](x)
-        x= self.last_layer(x)
-        out= x.view(-1, self.img_channels, self.img_size, self.img_size)
-        if self.last_activation=='sigmoid':out= torch.sigmoid(out)
-        
-        return out
-    
-class genv2(nn.Module):
-    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None):
-        super(genv2, self).__init__()
-        self.T= T
-        self.img_size= img_size
-        self.img_channels=img_channels
-        self.channel_list= channel_list
-        self.last_activation= last_activation
-        
-        decoder_block = ResNet_block_v1
+        self.upsample_net = upsampling_net
         
         self.decoder_blocks: nn.ModuleList[decoder_block] = nn.ModuleList()
-            
         self.decoder_blocks.append(decoder_block(self.T, self.channel_list[0]))
         for idx in range(1, len(self.channel_list)):
             self.decoder_blocks.append(decoder_block(self.channel_list[idx-1], self.channel_list[idx]))
         self.last_layer = nn.Conv2d(in_channels=self.channel_list[-1], out_channels=self.img_channels, kernel_size= 3, stride= 1, padding=1)
     
     def forward(self, x):
+        x= self.upsample_net(x) ## do upsampling 
         x= x.view(-1, self.T, self.img_size, self.img_size)
         
         for i in range(len(self.decoder_blocks)):
@@ -115,4 +48,22 @@ class genv2(nn.Module):
         out= x.view(-1, self.img_channels, self.img_size, self.img_size)
         if self.last_activation=='sigmoid':out= torch.sigmoid(out)
         
+        return out
+
+    
+    
+class genv1(nn.Module):
+    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None, upsampling_net=None):
+        super(genv1, self).__init__()
+        self.decoder = base_decoder(T, img_size, img_channels, channel_list, last_activation, decoder_block= conv_relu_bn_block, upsampling_net= upsampling_net)
+    def forward(self, x):
+        out = self.decoder(x)
+        return out
+    
+class genv2(nn.Module):
+    def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None, upsampling_net=None):
+        super(genv2, self).__init__()
+        self.decoder = base_decoder(T, img_size, img_channels, channel_list, last_activation, decoder_block= ResNet_block_v1, upsampling_net= upsampling_net)
+    def forward(self, x):
+        out = self.decoder(x)
         return out

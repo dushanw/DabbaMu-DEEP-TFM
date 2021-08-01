@@ -32,14 +32,17 @@ class modelA_class:
         lambda_= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(self.device)
         for t in range(H.shape[1]):
             lambda_[:, t:t+1, :, :]= self.forward_model_singleH(X, H[:,t:t+1,:,:])
+            
+        for _ in range(self.scale_factor-1): # downscaling
+            lambda_ = F.avg_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)*4
 
-        if self.noise==True:
-            for _ in range(self.scale_factor-1):
-                lambda_ = F.avg_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)*4
+        if self.noise==True: # add noise
             z= torch.randn_like(lambda_)         
             yt = lambda_ + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
-            
-            for _ in range(self.scale_factor-1):
-                yt= F.interpolate(yt, scale_factor= 2, mode='bicubic')
         else:yt=lambda_
-        return yt
+            
+        #for _ in range(self.scale_factor-1): # upscaling
+        #    yt= F.interpolate(yt, scale_factor= 2, mode='bicubic')
+            
+        
+        return yt ## returns downsampled image with/ without noise

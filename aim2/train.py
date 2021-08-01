@@ -15,6 +15,7 @@ from modules.train_utils import train
 from modules.models.forward_model import modelA_class
 from modules.models.forward_H import modelH_class
 from modules.models.decoder import *
+from modules.models.decoder_upsampling_nets import *
 from modules.m_inc_procs import *
 
 def run(config_file=None, opts=None, save_special=False):
@@ -57,27 +58,31 @@ def run(config_file=None, opts=None, save_special=False):
     T= cfg.MODEL.MODEL_H.T
     H_weight_preprocess= eval(cfg.MODEL.MODEL_H.H_weight_preprocess)
     H_init = cfg.MODEL.MODEL_H.H_init
-    H_complex_init= cfg.MODEL.MODEL_H.H_complex_init #override by H_init
     initialization_bias= cfg.MODEL.MODEL_H.initialization_bias
     H_activation= eval(cfg.MODEL.MODEL_H.H_activation)
     lr_H= cfg.MODEL.MODEL_H.lr_H
-    enable_train=cfg.MODEL.MODEL_H.enable_train
 
     ## params to A
     sPSF= eval(cfg.MODEL.MODEL_A.sPSF)
     exPSF= eval(cfg.MODEL.MODEL_A.exPSF)
     noise=cfg.MODEL.MODEL_A.noise
-    scale_factor=cfg.MODEL.MODEL_A.scale_factor # downsample
+    scale_factor=cfg.MODEL.MODEL_A.lambda_scale_factor # downsample
     rotation_lambda=cfg.MODEL.MODEL_A.rotation_lambda
     shift_lambda_real=cfg.MODEL.MODEL_A.shift_lambda_real
 
     ## decoder params:
     decoder_name= eval(cfg.MODEL.MODEL_DECODER.name)
+    upsampling_net_name = eval(cfg.MODEL.MODEL_DECODER.upsample_net)
     channel_list=cfg.MODEL.MODEL_DECODER.channel_list
     lr_decoder= cfg.MODEL.MODEL_DECODER.lr_decoder
     last_activation=cfg.MODEL.MODEL_DECODER.last_activation #'sigmoid'
     ########################################################################
-
+    
+    if lr_H==0:enable_train= False
+    else:enable_train=True
+        
+    print(f'MODEL_H : enable_train ::: {enable_train} (derived from lr_H)')
+    
     try:shutil.rmtree(save_dir)
     except:pass
     os.mkdir(save_dir)
@@ -99,7 +104,7 @@ def run(config_file=None, opts=None, save_special=False):
     torch.manual_seed(torch_seed)
     ###
     modelH = modelH_class(T=T, img_size = img_size, preprocess_H_weights= H_weight_preprocess, 
-                          complex_init=H_complex_init, device = device, 
+                          device = device, 
                           initialization_bias=initialization_bias, 
                           activation = H_activation, init_method= H_init, 
                           enable_train=enable_train, lambda_scale_factor= scale_factor).to(device)
@@ -108,7 +113,8 @@ def run(config_file=None, opts=None, save_special=False):
                          scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real)
     
-    decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation).to(device)
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T)
+    decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation, decoder_upsample_net).to(device)
 
     
     ###

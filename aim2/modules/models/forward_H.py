@@ -5,12 +5,14 @@ from modules.custom_activations import sigmoid_custom
 from modules.models.initialize_H_weights import *
 
 class modelH_class(nn.Module):
-    def __init__(self, T, img_size, preprocess_H_weights=None, complex_init=False, device='cpu', initialization_bias=0, activation= None, init_method = 'randn', enable_train=True, lambda_scale_factor=1):
+    def __init__(self, T, img_size, preprocess_H_weights=None, device='cpu', initialization_bias=0, activation= None, init_method = 'randn', enable_train=True, lambda_scale_factor=1):
         super(modelH_class, self).__init__()
         if init_method == 'randn':
-            if complex_init:init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.cfloat)
-            else:init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.float32)
-                
+            init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.float32)
+            
+        elif init_method == 'randn_complex':
+            init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.cfloat)
+            
         elif init_method == 'randn_FourierBased':
             init_weights = torch.randn((1, T, img_size, img_size), dtype= torch.float32)
             init_weights = torch.fft.fft2(init_weights)
