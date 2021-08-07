@@ -6,10 +6,13 @@ import os
 from contextlib import redirect_stdout
 from defaults import get_cfg_defaults
 
-from modules.models.preprocess_H_weights import ifft_2d_with_fftshift_real
+from modules.models.preprocess_H_weights import * #ifft_2d_with_fftshift_real
 from modules.custom_activations import sigmoid_custom
 from modules.kernels import *
-from modules.data import mnistgrid_getdataset
+
+from modules.datasets import mnistdigits, mnistdigits_grid2patch
+from modules.data_utils import return_dataloaders
+
 from modules.train_utils import train
 
 from modules.models.forward_model import modelA_class
@@ -17,6 +20,8 @@ from modules.models.forward_H import modelH_class
 from modules.models.decoder import *
 from modules.models.decoder_upsampling_nets import *
 from modules.m_inc_procs import *
+from modules.datasets import *
+
 
 def run(config_file=None, opts=None, save_special=False):
     cfg = get_cfg_defaults()
@@ -39,6 +44,7 @@ def run(config_file=None, opts=None, save_special=False):
     save_dir= cfg.GENERAL.save_dir
 
     #dataset params
+    get_dataset_func= eval(cfg.DATASET.name)
     img_size= cfg.DATASET.img_size
     delta=cfg.DATASET.delta
     batch_size_train= cfg.DATASET.batch_size_train
@@ -85,24 +91,26 @@ def run(config_file=None, opts=None, save_special=False):
     
     try:shutil.rmtree(save_dir)
     except:pass
+    
+    save_folder_name= save_dir.split('/')[-1]
+    print(f'len(results_saving_folder) : {len(save_folder_name)} (<= 255)')
+    
     os.mkdir(save_dir)
     
+    with open(f"{save_dir}/details.txt", 'w') as f:
+        f.write("details\n")
+        
     with open(f'{save_dir}/configs.yaml', 'w') as f:
         with redirect_stdout(f): print(cfg.dump())
 
     ########################################################################
     
-    train_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'train', delta), batch_size=batch_size_train, shuffle=True, drop_last= True)
-    val_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'val', delta), batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
-    test_loader = torch.utils.data.DataLoader(mnistgrid_getdataset(img_size, 'test', delta), batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
-
-    x, y= next(iter(train_loader))
-    vmin= x.min().item()
-    vmax= x.max().item()
-    print('dataset value range : ',vmin, vmax)
-
-    torch.manual_seed(torch_seed)
+    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta)
+    train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train)
+    
     ###
+    
+    torch.manual_seed(torch_seed)
     modelH = modelH_class(T=T, img_size = img_size, preprocess_H_weights= H_weight_preprocess, 
                           device = device, 
                           initialization_bias=initialization_bias, 
