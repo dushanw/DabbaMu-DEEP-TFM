@@ -9,6 +9,7 @@ _C.GENERAL.device = 'cuda:0'
 _C.GENERAL.save_dir = 'figs/test'
 
 _C.DATASET = CN()
+_C.DATASET.name= 'mnistdigits_grid2patch'
 _C.DATASET.img_size= 32
 _C.DATASET.delta=0.000001
 _C.DATASET.batch_size_train= 32
@@ -32,12 +33,12 @@ _C.MODEL.MODEL_H.H_weight_preprocess= 'ifft_2d_with_fftshift_real'
 _C.MODEL.MODEL_H.H_init = 'randn'
 _C.MODEL.MODEL_H.initialization_bias=0
 _C.MODEL.MODEL_H.H_activation= 'sigmoid_custom'
-_C.MODEL.MODEL_H.lr_H= 100.0
+_C.MODEL.MODEL_H.lr_H= 0.0
 
 _C.MODEL.MODEL_A = CN()
 _C.MODEL.MODEL_A.sPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.exPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
-_C.MODEL.MODEL_A.noise=True
+_C.MODEL.MODEL_A.noise=False
 _C.MODEL.MODEL_A.lambda_scale_factor=1 # downsample
 _C.MODEL.MODEL_A.rotation_lambda=1000.0
 _C.MODEL.MODEL_A.shift_lambda_real=10.0
