@@ -112,14 +112,20 @@ def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_lo
         m= m_inc_proc(m, epoch)
         print(f'm : {m}')
         
-        start = time.time()
+        start_train = time.time()
         losses_train, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics = loop(device, train_loader, model_decoder, model_A, model_H, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, metrics)
-        end= time.time()
+        end_train= time.time()
         
+        start_val = time.time()
         losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val)
+        end_val= time.time()
         
+        with open(f"{save_dir}/details.txt", 'a') as f:
+            timing_details= f'training loop time (for epoch: {epoch}): {end_train-start_train} sec\n'
+            timing_details+= f'validation loop time (for epoch: {epoch}): {end_val-start_val} sec\n\n'
+            print(timing_details)
+            f.write(timing_details)
         
-        print(f'training loop time (for single epoch): {end-start} sec')
         if classifier!=None:
             class_acc_on_real, class_acc_on_fake = evaluate(device, test_loader, model_decoder, model_A, model_H, classifier, m, rescale= rescale_for_classifier)
 
