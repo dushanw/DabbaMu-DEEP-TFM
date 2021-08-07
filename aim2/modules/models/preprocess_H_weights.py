@@ -33,3 +33,6 @@ def ifft_2d_with_fftshift_real(x): #input: frequency domain ; output: spatial do
 
 def identity(x):
     return x
+
+def absolute(x):
+    return torch.abs(x)
