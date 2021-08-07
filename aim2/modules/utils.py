@@ -17,6 +17,7 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None, metric_mse
     cummulative_heights=[0]
     widths=[]
     img_dir_list= glob.glob(f'{save_dir}/{epoch}_*')
+    
     for img_dir in sorted(img_dir_list):
         img = plt.imread(img_dir)
         imgs.append(img)
