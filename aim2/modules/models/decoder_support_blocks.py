@@ -3,7 +3,7 @@ import torch
     
 class upsample_transconv_relu_bn_block(nn.Module):
     def __init__(self, in_channels, out_channels):
-        super(transposeconv_block, self).__init__()
+        super(upsample_transconv_relu_bn_block, self).__init__()
         self.seq= nn.Sequential(
                 nn.ConvTranspose2d(in_channels, out_channels, kernel_size= 4, padding=1, stride=2),
                 nn.ReLU(),

@@ -10,7 +10,7 @@ class bicubic_interp():
 
     def __call__(self, yt):
         for _ in range(self.lambda_scale_factor-1): # upscaling
-            yt= F.interpolate(yt, scale_factor= 2, mode='bicubic')
+            yt= F.interpolate(yt, scale_factor= 2, mode='bicubic', align_corners=False)
         return yt
     
 class learnable_transpose_conv(nn.Module):

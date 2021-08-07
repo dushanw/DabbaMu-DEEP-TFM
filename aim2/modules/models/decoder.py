@@ -56,6 +56,10 @@ class genv1(nn.Module):
     def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None, upsampling_net=None):
         super(genv1, self).__init__()
         self.decoder = base_decoder(T, img_size, img_channels, channel_list, last_activation, decoder_block= conv_relu_bn_block, upsampling_net= upsampling_net)
+        
+        #print('decoder : \n', self.decoder)
+        #for name, param in self.decoder.named_parameters():
+        #    print(f'{name} : {param.requires_grad}')
     def forward(self, x):
         out = self.decoder(x)
         return out
@@ -64,6 +68,10 @@ class genv2(nn.Module):
     def __init__(self, T, img_size=32, img_channels=1, channel_list=[4,3,2,1], last_activation=None, upsampling_net=None):
         super(genv2, self).__init__()
         self.decoder = base_decoder(T, img_size, img_channels, channel_list, last_activation, decoder_block= ResNet_block_v1, upsampling_net= upsampling_net)
+        #print('decoder : \n', self.decoder)
+        #for name, param in self.decoder.named_parameters():
+        #    print(f'{name} : {param.requires_grad}')
+            
     def forward(self, x):
         out = self.decoder(x)
         return out

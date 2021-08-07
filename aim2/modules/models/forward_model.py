@@ -39,7 +39,8 @@ class modelA_class:
         if self.noise==True: # add noise
             z= torch.randn_like(lambda_)         
             yt = lambda_ + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
-        else:yt=lambda_
+        else:
+            yt=lambda_
             
         #for _ in range(self.scale_factor-1): # upscaling
         #    yt= F.interpolate(yt, scale_factor= 2, mode='bicubic')
