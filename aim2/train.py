@@ -121,7 +121,7 @@ def run(config_file=None, opts=None, save_special=False):
                          scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real)
     
-    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T)
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size)
     decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation, decoder_upsample_net).to(device)
 
     
