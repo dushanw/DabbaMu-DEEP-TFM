@@ -5,8 +5,8 @@ from modules.models.decoder_support_blocks import upsample_transconv_relu_bn_blo
 
 
 class bicubic_interp():
-    def __init__(self, lambda_scale_factor, T, recon_img_size= None): # T, recon_img_size will not be needed
-        self.lambda_scale_factor= lambda_scale_factor
+    def __init__(self, **kwargs): # T, recon_img_size will not be needed
+        self.lambda_scale_factor= kwargs['lambda_scale_factor']
 
     def __call__(self, yt):
         for _ in range(self.lambda_scale_factor-1): # upscaling
@@ -14,10 +14,10 @@ class bicubic_interp():
         return yt
     
 class learnable_transpose_conv(nn.Module):
-    def __init__(self, lambda_scale_factor, T, recon_img_size= None): # recon_img_size will not be needed
+    def __init__(self, **kwargs): # recon_img_size will not be needed
         super(learnable_transpose_conv, self).__init__()
-        self.lambda_scale_factor= lambda_scale_factor
-        self.T= T
+        self.lambda_scale_factor= kwargs['lambda_scale_factor']
+        self.T= kwargs['T']
         
         upsample_block =  upsample_transconv_relu_bn_block # this doing 2x2 upsampling using (TransposeConv + relu + BN)
         
@@ -38,12 +38,13 @@ class custom_v1(nn.Module):
     :: in_channels: T, out_channels: (upscale_factor**2)*T.
     There are (yt_size*yt_size) pixels in yt. Therefore, there will be (yt_size*yt_size) number of linear layers.
     """
-    def __init__(self, lambda_scale_factor, T, recon_img_size= 64):
+    def __init__(self, **kwargs):
         super(custom_v1, self).__init__()
 
-        self.lambda_scale_factor = lambda_scale_factor
-        self.T= T
-        self.recon_img_size= recon_img_size
+        self.lambda_scale_factor = kwargs['lambda_scale_factor']
+        self.T= kwargs['T']
+        self.recon_img_size= kwargs['recon_img_size']
+        
         self.upscale_factor= 2**(self.lambda_scale_factor-1)
         self.yt_img_size= self.recon_img_size//self.upscale_factor
         
@@ -69,18 +70,33 @@ class custom_v2(nn.Module):
     """
     Idea: the same concept in "custom_v1" but implemented in very much efficient way
     """
-    def __init__(self, lambda_scale_factor, T, recon_img_size= 64):
+    def __init__(self, **kwargs):
         super(custom_v2, self).__init__()
         
-        self.lambda_scale_factor= lambda_scale_factor
-        self.T= T
-        self.recon_img_size= recon_img_size
-        self.upscale_factor= 2**(lambda_scale_factor-1)
+        self.lambda_scale_factor = kwargs['lambda_scale_factor']
+        self.T= kwargs['T']
+        self.recon_img_size= kwargs['recon_img_size']
+        self.init_method=  kwargs['init_method']
+        
+        self.upscale_factor= 2**(self.lambda_scale_factor-1)
         self.yt_img_size= self.recon_img_size//self.upscale_factor
-        self.expected_out_channels= T * self.upscale_factor**2
+        self.expected_out_channels= self.T * self.upscale_factor**2
 
-        self.weights= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, T, self.expected_out_channels), requires_grad= True)
+        self.weights= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, self.T, self.expected_out_channels), requires_grad= True)
         self.biases= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, 1, self.expected_out_channels), requires_grad= True)
+        
+        if self.init_method== 'linear_default':
+            stdv = 1. / math.sqrt(self.weights.size(1))
+            self.weights.data.uniform_(-stdv, stdv)
+            self.biases.data.uniform_(-stdv, stdv)
+
+        elif self.init_method=='xavier_normal':
+            torch.nn.init.xavier_normal_(self.weights)
+            torch.nn.init.zeros_(self.biases)
+
+        elif self.init_method=='randn':
+            pass # default is this
+        
     def forward(self, yt):
         batch_size= yt.shape[0]
         yt_input = yt.view(batch_size, self.T, self.yt_img_size, self.yt_img_size)

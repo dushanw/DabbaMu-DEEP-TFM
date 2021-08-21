@@ -79,6 +79,7 @@ def run(config_file=None, opts=None, save_special=False):
     ## decoder params:
     decoder_name= eval(cfg.MODEL.MODEL_DECODER.name)
     upsampling_net_name = eval(cfg.MODEL.MODEL_DECODER.upsample_net)
+    decoder_upsample_init_method= cfg.MODEL.MODEL_DECODER.upsample_net_init_method
     channel_list=cfg.MODEL.MODEL_DECODER.channel_list
     lr_decoder= cfg.MODEL.MODEL_DECODER.lr_decoder
     last_activation=cfg.MODEL.MODEL_DECODER.last_activation #'sigmoid'
@@ -121,7 +122,7 @@ def run(config_file=None, opts=None, save_special=False):
                          scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real)
     
-    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size)
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method)
     decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation, decoder_upsample_net).to(device)
 
     
