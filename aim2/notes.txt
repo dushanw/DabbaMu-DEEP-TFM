@@ -1,5 +1,0 @@
-Check:
-
-1. make lr_H=0, !=0 and check enable_train_Ht:: DONE
-2. check whether decoder_upsampling block is training or not (HOW?? -> check)
-3. Check output of model_A: should be downscaled yt with/ without noise
