@@ -1,0 +1,24 @@
+device = 'cuda:0'
+
+exps = {
+    'MODEL.MODEL_H.H_init': ['randn_FourierBased', 'uniformones_FourierBased', 'hadamard_FourierBased'],
+    'MODEL.MODEL_H.H_weight_preprocess': ['ifft_2d_with_fftshift_real'],
+    
+    'DATASET.img_size':  ['32', '64'], 
+    
+    'MODEL.MODEL_H.T': ['1','2','4', '8', '16', '32'],
+    
+    'MODEL.MODEL_DECODER.name': ['genv1', 'genv2'],
+    'MODEL.MODEL_DECODER.channel_list': ['[24, 12, 8, 4, 2]', '[32, 32, 24, 12, 8, 4, 2]'],
+    'MODEL.MODEL_DECODER.upsample_net': ['custom_v1'], #['bicubic_interp', 'learnable_transpose_conv', 'custom_v1'],
+    
+    'MODEL.MODEL_A.lambda_scale_factor': ['1'], #['1','2','3','4'],
+    
+    'DATASET.name': ['mnistdigits_grid2patch', 'mnistdigits']
+}
+
+
+general_opts= ['TRAIN.show_results_epoch', '1',
+               'TRAIN.epochs', '1']
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
