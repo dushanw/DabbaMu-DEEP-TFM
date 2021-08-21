@@ -64,3 +64,53 @@ class custom_v1(nn.Module):
                 output[:,:,i*self.upscale_factor:(i+1)*self.upscale_factor, j*self.upscale_factor:(j+1)*self.upscale_factor] = x_patch
         return output
                 
+        
+class custom_v2(nn.Module):
+    """
+    Idea: the same concept in "custom_v1" but implemented in very much efficient way
+    """
+    def __init__(self, lambda_scale_factor, T, recon_img_size= 64):
+        super(custom_v2, self).__init__()
+        
+        self.lambda_scale_factor= lambda_scale_factor
+        self.T= T
+        self.recon_img_size= recon_img_size
+        self.upscale_factor= 2**(lambda_scale_factor-1)
+        self.yt_img_size= self.recon_img_size//self.upscale_factor
+        self.expected_out_channels= T * self.upscale_factor**2
+
+        self.weights= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, T, self.expected_out_channels), requires_grad= True)
+        self.biases= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, 1, self.expected_out_channels), requires_grad= True)
+    def forward(self, yt):
+        batch_size= yt.shape[0]
+        yt_input = yt.view(batch_size, self.T, self.yt_img_size, self.yt_img_size)
+
+        yt= yt_input.reshape(batch_size, self.T, self.yt_img_size* self.yt_img_size).permute(2, 0, 1) #shape: (n_pixels_in_yt, batch_size, self.T)
+
+        yt_upsample= torch.matmul(yt, self.weights) + self.biases  #shape: (yt_img_size**2, batch_size, T*upscale_factor**2)
+        yt_upsample = yt_upsample.view(self.yt_img_size, self.yt_img_size, batch_size, self.T, self.upscale_factor, self.upscale_factor).permute(2, 3, 0, 1, 4, 5)
+        output= self.reshape_special(yt_upsample)
+
+        return output
+                
+    def reshape_special(self, a): 
+        '''
+        input
+        ----
+        a: torch.tensor
+            Shape `(batch_size, T, yt_img_size1, yt_img_size2, upscale_factor1, upscale_factor2)`
+        return
+        -----
+        out: torch.tensor
+            Shape `(batch_size, T, yt_img_size1*upscale_factor1, yt_img_size2*upscale_factor2)` 
+            Description: Direct reshape cant use for this.
+        '''
+
+        a_dash = a.permute(0, 1, 2, 3, 5, 4) # Shape `(batch_size, T, yt_img_size1, yt_img_size2, upscale_factor2, upscale_factor1)`
+        batch_size, T, yt_img_size1, yt_img_size2, upscale_factor2, upscale_factor1= a_dash.shape
+
+        b  = a_dash.reshape(batch_size, T, yt_img_size1, yt_img_size2*upscale_factor2, upscale_factor1)  # Shape `(batch_size, T, yt_img_size1, yt_img_size2*upscale_factor2, upscale_factor1)`
+        b_dash = b.permute(0, 1, 2, 4,3)  # Shape `(batch_size, T, yt_img_size1, upscale_factor1, yt_img_size2*upscale_factor2)`
+        out= b_dash.reshape(batch_size, T, yt_img_size1*upscale_factor1, yt_img_size2*upscale_factor2)  # Shape `(batch_size, T, yt_img_size1*upscale_factor1, yt_img_size2*upscale_factor2)`
+
+        return out
