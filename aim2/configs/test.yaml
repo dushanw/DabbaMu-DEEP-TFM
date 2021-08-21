@@ -44,6 +44,7 @@ MODEL:
   MODEL_DECODER:
     name: 'genv1'
     upsample_net: 'bicubic_interp'
+    upsample_net_init_method: 'randn'
     channel_list: [4, 3, 2]
     lr_decoder: 0.001
     last_activation: None
