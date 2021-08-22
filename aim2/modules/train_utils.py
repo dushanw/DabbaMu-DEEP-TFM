@@ -23,7 +23,7 @@ def evaluate(device, loader, model_decoder, model_A, model_H, classifier, rescal
             X= x.float()
             Ht= model_H(m)
             yt = model_A.compute_yt(X, Ht)
-            X_hat = model_decoder(yt)
+            X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
             
             acc_on_real.append(accuracy(y, classifier(X*rescale_std+rescale_mean)))
             acc_on_fake.append(accuracy(y, classifier(X_hat*rescale_std+rescale_mean)))
@@ -53,7 +53,7 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
             for _ in range(train_model_iter):
                 Ht= model_H(m)
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt)
+                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
                 opt_model.step()
@@ -62,7 +62,7 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
             for _ in range(train_H_iter):
                 Ht= model_H(m)
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt)
+                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
                 
@@ -74,7 +74,7 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
                 X= x.float()
                 Ht= model_H(m)
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt)
+                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 loss = criterion(X_hat, X)
         losses_temp.append(loss.item())
         

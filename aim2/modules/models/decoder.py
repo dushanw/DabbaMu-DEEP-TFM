@@ -38,8 +38,8 @@ class base_decoder(nn.Module):
             self.decoder_blocks.append(decoder_block(self.channel_list[idx-1], self.channel_list[idx]))
         self.last_layer = nn.Conv2d(in_channels=self.channel_list[-1], out_channels=self.img_channels, kernel_size= 3, stride= 1, padding=1)
     
-    def forward(self, x):
-        x= self.upsample_net(x) ## do upsampling 
+    def forward(self, x, **kwargs):
+        x= self.upsample_net(x, **kwargs) ## do upsampling 
         x= x.view(-1, self.T, self.img_size, self.img_size)
         
         for i in range(len(self.decoder_blocks)):
@@ -60,8 +60,8 @@ class genv1(nn.Module):
         #print('decoder : \n', self.decoder)
         #for name, param in self.decoder.named_parameters():
         #    print(f'{name} : {param.requires_grad}')
-    def forward(self, x):
-        out = self.decoder(x)
+    def forward(self, x, **kwargs):
+        out = self.decoder(x, **kwargs)
         return out
     
 class genv2(nn.Module):
@@ -72,6 +72,6 @@ class genv2(nn.Module):
         #for name, param in self.decoder.named_parameters():
         #    print(f'{name} : {param.requires_grad}')
             
-    def forward(self, x):
-        out = self.decoder(x)
+    def forward(self, x, **kwargs):
+        out = self.decoder(x, **kwargs)
         return out

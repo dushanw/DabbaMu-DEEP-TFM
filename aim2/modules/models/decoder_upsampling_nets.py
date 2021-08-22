@@ -2,13 +2,14 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from modules.models.decoder_support_blocks import upsample_transconv_relu_bn_block, upsample_custom1_block
-
+import math
+import numpy as np
 
 class bicubic_interp():
     def __init__(self, **kwargs): # T, recon_img_size will not be needed
         self.lambda_scale_factor= kwargs['lambda_scale_factor']
 
-    def __call__(self, yt):
+    def __call__(self, yt, **kwargs):
         for _ in range(self.lambda_scale_factor-1): # upscaling
             yt= F.interpolate(yt, scale_factor= 2, mode='bicubic', align_corners=False)
         return yt
@@ -25,10 +26,10 @@ class learnable_transpose_conv(nn.Module):
         for _ in range(self.lambda_scale_factor-1):
             self.upsample_blocks.append(upsample_block(self.T , self.T))
             
-    def forward(self, x):        
+    def forward(self, yt, **kwargs):        
         for i in range(self.lambda_scale_factor-1):
-            x= self.upsample_blocks[i](x)
-        return x
+            yt= self.upsample_blocks[i](yt)
+        return yt
     
 class custom_v1(nn.Module):
     """
@@ -53,8 +54,8 @@ class custom_v1(nn.Module):
         for _ in range(self.yt_img_size**2):
             self.upsample_blocks.append(upsample_custom1_block(self.T , self.T, upscale_factor=self.upscale_factor))
 
-    def forward(self, x):
-        x= x.view(-1, self.T, self.yt_img_size, self.yt_img_size)
+    def forward(self, yt, **kwargs):
+        x= yt.view(-1, self.T, self.yt_img_size, self.yt_img_size)
 
         device= x.device
         output = torch.zeros(x.shape[0], self.T, self.recon_img_size, self.recon_img_size).to(device)
@@ -97,7 +98,7 @@ class custom_v2(nn.Module):
         elif self.init_method=='randn':
             pass # default is this
         
-    def forward(self, yt):
+    def forward(self, yt, **kwargs):
         batch_size= yt.shape[0]
         yt_input = yt.view(batch_size, self.T, self.yt_img_size, self.yt_img_size)
 
@@ -130,3 +131,123 @@ class custom_v2(nn.Module):
         out= b_dash.reshape(batch_size, T, yt_img_size1*upscale_factor1, yt_img_size2*upscale_factor2)  # Shape `(batch_size, T, yt_img_size1*upscale_factor1, yt_img_size2*upscale_factor2)`
 
         return out
+    
+    
+class custom_v3(nn.Module):
+    """
+    Idea: 
+    """
+    def __init__(self, **kwargs):
+        super(custom_v3, self).__init__()
+        
+        self.lambda_scale_factor = kwargs['lambda_scale_factor']
+        self.T= kwargs['T']
+        self.recon_img_size= kwargs['recon_img_size']
+        self.init_method=  kwargs['init_method']
+        Ht= kwargs['Ht']
+        
+        self.upscale_factor= 2**(self.lambda_scale_factor-1)
+        self.yt_img_size= self.recon_img_size//self.upscale_factor
+        
+        #Ht= torch.randn(1, T, img_size, img_size)
+        A= self.convert_Ht2A(Ht, self.lambda_scale_factor)
+        self.A_transpose= nn.Parameter(A.permute(0,1,3,2), requires_grad= True) # Get transpose for upsampling (Approx for inverse(A))
+        
+    def forward(self, yt, **kwargs):
+        yt= yt.view(-1, self.T, self.yt_img_size, self.yt_img_size)        
+        batch_size= yt.shape[0]
+        output = (self.A_transpose @ yt.flatten(start_dim= 2).unsqueeze(dim=3)).reshape(-1, self.T, self.recon_img_size, self.recon_img_size)
+
+        return output # (batch_size, T, recon_img_size, )
+
+    def get_yt_map_idx_grid(self, img_size, scale_factor):
+        yt_img_size= img_size//scale_factor
+        yt_idx_grid= torch.arange(yt_img_size**2).reshape(yt_img_size, yt_img_size)
+        yt_map_idx_grid_flatten= torch.tile(yt_idx_grid, (scale_factor,scale_factor,1,1)).permute(2, 0, 3, 1).reshape(img_size, img_size).flatten()
+
+        return yt_map_idx_grid_flatten
+
+    def convert_Ht2A(self, Ht, lambda_scale_factor):
+        """
+        Convert Ht to sparse matrix A/ forward model matrix including downsampling
+
+        Ht.shape: [1, T, img_size, img_size]
+        X.shape: [n_imgs, 1, img_size, img_size]
+        """
+        img_size= Ht.shape[2]
+        device= Ht.device
+        
+        T= Ht.shape[1]
+        scale_factor= 2**(lambda_scale_factor-1)
+        yt_img_size= img_size//scale_factor
+
+        Ht_flatten= Ht.reshape(-1) #shape: (T*img_size*img_size, )
+        A= torch.zeros(T, yt_img_size**2, img_size**2).float().to(device) #shape: (T, yt_img_size**2, img_size**2)  ## CAUTION: MEMORY HUNGRY- 1 !!!
+
+        yt_map_idx_grid_flatten= self.get_yt_map_idx_grid(img_size, scale_factor).to(device) #shape: (img_size, img_size)
+
+        depth= torch.tile(torch.arange(T).to(device).reshape(1, -1), (img_size*img_size, 1)).T.reshape(-1)
+        column= torch.tile(torch.arange(img_size*img_size).to(device), (T,)) 
+        row= torch.tile(yt_map_idx_grid_flatten[torch.arange(img_size*img_size).to(device)], (T,))
+
+        A= A.index_put(indices=[depth, row, column], values=Ht_flatten.float()).unsqueeze(dim=0) ## CAUTION: MEMORY HUNGRY- 3 !!!
+        return A
+    
+    
+class custom_v4(nn.Module):
+    """
+    Idea: 
+    """
+    def __init__(self, **kwargs):
+        super(custom_v4, self).__init__()
+        
+        self.lambda_scale_factor = kwargs['lambda_scale_factor']
+        self.T= kwargs['T']
+        self.recon_img_size= kwargs['recon_img_size']
+        self.init_method=  kwargs['init_method']
+        
+        self.upscale_factor= 2**(self.lambda_scale_factor-1)
+        self.yt_img_size= self.recon_img_size//self.upscale_factor
+                
+    def forward(self, yt, **kwargs):
+        yt= yt.view(-1, self.T, self.yt_img_size, self.yt_img_size)  
+        Ht= kwargs['Ht']
+        
+        A= self.convert_Ht2A(Ht, self.lambda_scale_factor)
+        A_transpose= A.permute(0,1,3,2) # Get transpose for upsampling (Approx for inverse(A))
+        output = (A_transpose @ yt.flatten(start_dim= 2).unsqueeze(dim=3)).reshape(-1, self.T, self.recon_img_size, self.recon_img_size)
+
+        return output # (batch_size, T, recon_img_size, )
+
+    def get_yt_map_idx_grid(self, img_size, scale_factor):
+        yt_img_size= img_size//scale_factor
+        yt_idx_grid= torch.arange(yt_img_size**2).reshape(yt_img_size, yt_img_size)
+        yt_map_idx_grid_flatten= torch.tile(yt_idx_grid, (scale_factor,scale_factor,1,1)).permute(2, 0, 3, 1).reshape(img_size, img_size).flatten()
+
+        return yt_map_idx_grid_flatten
+
+    def convert_Ht2A(self, Ht, lambda_scale_factor):
+        """
+        Convert Ht to sparse matrix A/ forward model matrix including downsampling
+
+        Ht.shape: [1, T, img_size, img_size]
+        X.shape: [n_imgs, 1, img_size, img_size]
+        """
+        img_size= Ht.shape[2]
+        device= Ht.device
+        
+        T= Ht.shape[1]
+        scale_factor= 2**(lambda_scale_factor-1)
+        yt_img_size= img_size//scale_factor
+
+        Ht_flatten= Ht.reshape(-1) #shape: (T*img_size*img_size, )
+        A= torch.zeros(T, yt_img_size**2, img_size**2).float().to(device) #shape: (T, yt_img_size**2, img_size**2)  ## CAUTION: MEMORY HUNGRY- 1 !!!
+
+        yt_map_idx_grid_flatten= self.get_yt_map_idx_grid(img_size, scale_factor).to(device) #shape: (img_size, img_size)
+
+        depth= torch.tile(torch.arange(T).to(device).reshape(1, -1), (img_size*img_size, 1)).T.reshape(-1)
+        column= torch.tile(torch.arange(img_size*img_size).to(device), (T,)) 
+        row= torch.tile(yt_map_idx_grid_flatten[torch.arange(img_size*img_size).to(device)], (T,))
+
+        A= A.index_put(indices=[depth, row, column], values=Ht_flatten.float()).unsqueeze(dim=0) ## CAUTION: MEMORY HUNGRY- 3 !!!
+        return A
