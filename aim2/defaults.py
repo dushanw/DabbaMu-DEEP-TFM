@@ -11,6 +11,7 @@ _C.GENERAL.save_dir = 'figs/test'
 _C.DATASET = CN()
 _C.DATASET.name= 'mnistdigits_grid2patch'
 _C.DATASET.img_size= 32
+_C.DATASET.num_samples_train= 600
 _C.DATASET.delta=0.000001
 _C.DATASET.batch_size_train= 32
 _C.DATASET.img_channels=1

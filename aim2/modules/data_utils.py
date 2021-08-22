@@ -7,11 +7,20 @@ import glob
 import random
 
 class mnistgrid_getdataset(torch.utils.data.Dataset):
-    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
         super(mnistgrid_getdataset, self).__init__()
         
         self.type_ = type_
-        self.img_list = glob.glob(f"{img_dir}/{self.type_}/*.jpg")
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.jpg"), key= lambda x: int(x.split('/')[-1][:-4]))
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
         
         self.delta= delta
         
@@ -41,7 +50,6 @@ class mnistgrid_getdataset(torch.utils.data.Dataset):
     
     
 def return_dataloaders(trainset, valset, testset, batch_size_train= 32):
-    global test_loader
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
     val_loader = torch.utils.data.DataLoader(valset, batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
     test_loader = torch.utils.data.DataLoader(testset, batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed

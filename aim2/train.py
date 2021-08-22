@@ -46,6 +46,7 @@ def run(config_file=None, opts=None, save_special=False):
     #dataset params
     get_dataset_func= eval(cfg.DATASET.name)
     img_size= cfg.DATASET.img_size
+    num_samples_train= cfg.DATASET.num_samples_train
     delta=cfg.DATASET.delta
     batch_size_train= cfg.DATASET.batch_size_train
     img_channels= cfg.DATASET.img_channels
@@ -106,7 +107,7 @@ def run(config_file=None, opts=None, save_special=False):
 
     ########################################################################
     
-    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta)
+    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
     train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train)
     
     ###

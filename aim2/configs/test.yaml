@@ -9,6 +9,7 @@ GENERAL:
 DATASET:
   name: 'mnistdigits_grid2patch'
   img_size: 32
+  num_samples_train: 600
   delta: 0.000001
   batch_size_train: 32
   img_channels: 1

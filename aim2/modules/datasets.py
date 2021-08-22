@@ -4,8 +4,7 @@ import matplotlib.pyplot as plt
 from modules.data_utils import mnistgrid_getdataset
 
 
-def mnistdigits(img_size, delta):
-    global testset
+def mnistdigits(img_size, delta, num_samples_train): #num_samples will not be used 
     
     mean =-delta/(1-delta)
     std=1/(1-delta)
@@ -32,9 +31,10 @@ def mnistdigits(img_size, delta):
     
     return trainset, valset, testset
 
-def mnistdigits_grid2patch(img_size, delta):
-    data_dir= "/n/home06/udithhaputhanthri/project_udith/datasets/mnistgrid_imgsize(32)"
-    trainset = mnistgrid_getdataset(img_size, 'train', delta, data_dir)
+def mnistdigits_grid2patch(img_size, delta, num_samples_train):
+    data_dir= "/n/home06/udithhaputhanthri/project_udith/datasets/mnistgrid_imgsize(32)_v2"
+    
+    trainset = mnistgrid_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
     valset= mnistgrid_getdataset(img_size, 'val', delta, data_dir)
     testset= mnistgrid_getdataset(img_size, 'test', delta, data_dir)
     
