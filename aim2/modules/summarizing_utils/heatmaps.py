@@ -41,9 +41,12 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
     
     if show_interested_img_names:print('interested_imgs : ', '\n'.join(interested_imgs))
     
-    ax1_labels = sorted(dict_[interested_key1], key =float)
-    ax2_labels = sorted(dict_[interested_key2], key =float)
-            
+    #ax1_labels = sorted(dict_[interested_key1], key =float)
+    #ax2_labels = sorted(dict_[interested_key2], key =float)
+
+    ax1_labels = dict_[interested_key1]
+    ax2_labels = dict_[interested_key2]
+    
     metric_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype='float')
     
     def imgdir2metric(img_name):return get_metric(img_name)[metric_name]
@@ -125,6 +128,8 @@ def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested
     
     
 def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list, mode, save_dir, show_interested_img_names= False):
+    plot_axes_variables= list(plot_vars_dict.keys())
+    
     attr_dict_lowlrH = plot_vars_dict.copy()
     attr_dict_highlrH = plot_vars_dict.copy()
     
@@ -139,7 +144,7 @@ def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list,
     for override_dict in overrides_dict_list:
         print(f'override dict : {override_dict}')
 
-        plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1 = 'T', interested_key2= 'lambda_scale_factor', override_dict=override_dict, metric_name= mode, save_dir =save_dir, show_interested_img_names= show_interested_img_names)
+        plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1 = plot_axes_variables[0], interested_key2= plot_axes_variables[1], override_dict=override_dict, metric_name= mode, save_dir =save_dir, show_interested_img_names= show_interested_img_names)
     print('ploting heatmaps finished !!!')
     
     if save_dir !=None:
