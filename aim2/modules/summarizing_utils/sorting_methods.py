@@ -18,6 +18,7 @@ def heatmap_sort_function(heatmap_dir):
     values = []
     
     for attr in attrs:
+        if attr== '':continue
         attr_value= attr.split('(')[1][:-1]
         try:values.append(float(attr_value)) # float values
         except:
