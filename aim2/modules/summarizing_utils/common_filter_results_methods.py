@@ -33,6 +33,9 @@ def find_best_result(img_dir, metric_name='SSIM', metric_type= 'score'): #metric
         metric = metric_dict[metric_name]
         if metric!='nan':metric_list.append(metric)
         
+    if len(metric_list)==0:
+        print(f'####  no img_dir with exceptable metric is found : {img_dir}')
+        return None
     min_metric= min(metric_list)
     max_metric= max(metric_list)
     
