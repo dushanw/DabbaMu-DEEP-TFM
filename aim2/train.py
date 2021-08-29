@@ -19,6 +19,8 @@ from modules.models.forward_model import modelA_class
 from modules.models.forward_H import modelH_class
 from modules.models.decoder import *
 from modules.models.decoder_upsampling_nets import *
+from modules.models.decoder_upsampling_nets_experimental import *
+
 from modules.m_inc_procs import *
 from modules.datasets import *
 
