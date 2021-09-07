@@ -80,46 +80,47 @@ class custom_v2(nn.Module):
         self.T= kwargs['T']
         self.recon_img_size= kwargs['recon_img_size']
         self.init_method=  kwargs['init_method']
+        self.bias= kwargs['custom_upsampling_bias']
         
         self.upscale_factor= 2**(self.lambda_scale_factor-1)
         self.yt_img_size= self.recon_img_size//self.upscale_factor
-        self.expected_out_channels= self.T * self.upscale_factor**2
-
-        self.weights= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, self.T, self.expected_out_channels), requires_grad= True)
-        self.biases= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, 1, self.expected_out_channels), requires_grad= True)
+        #self.expected_out_channels= self.T * self.upscale_factor**2
         
+        self.seq_block= kwargs['upsample_postproc_block']
+        self.weights= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, self.T, self.upscale_factor**2), requires_grad= True)
+        if self.bias:self.biases= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, 1, self.upscale_factor**2), requires_grad= True)
         
         if self.init_method== 'linear_default':
             stdv = 1. / math.sqrt(self.weights.size(1))
             self.weights.data.uniform_(-stdv, stdv)
-            self.biases.data.uniform_(-stdv, stdv)
+            if self.bias:self.biases.data.uniform_(-stdv, stdv)
 
         elif self.init_method=='xavier_normal':
             torch.nn.init.xavier_normal_(self.weights)
-            torch.nn.init.zeros_(self.biases)
+            if self.bias:torch.nn.init.zeros_(self.biases)
 
         elif self.init_method=='randn':
             pass # default is this
     
         elif self.init_method=='Ht_based':
-            weights= convert_Ht2Weights(kwargs['Ht'].detach(), self.upscale_factor)
-            
+            weights= convert_Ht2Weights(kwargs['Ht'].detach(), self.upscale_factor)            
             self.weights= nn.Parameter(weights, requires_grad= True)
-            self.biases= nn.Parameter(torch.randn(self.yt_img_size* self.yt_img_size, 1, self.expected_out_channels), requires_grad= True)
         
     def forward(self, yt, **kwargs):
         batch_size= yt.shape[0]
         yt_input = yt.view(batch_size, self.T, self.yt_img_size, self.yt_img_size)
+        yt= yt_input.reshape(batch_size, self.T, self.yt_img_size* self.yt_img_size).permute(2, 0, 1)  #shape: (yt_img_size**2, batch_size, T)
 
-        yt= yt_input.reshape(batch_size, self.T, self.yt_img_size* self.yt_img_size).permute(2, 0, 1) #shape: (n_pixels_in_yt, batch_size, self.T)
-
-        yt_upsample= torch.matmul(yt, self.weights) + self.biases  #shape: (yt_img_size**2, batch_size, T*upscale_factor**2)
-        yt_upsample = yt_upsample.view(self.yt_img_size, self.yt_img_size, batch_size, self.T, self.upscale_factor, self.upscale_factor).permute(2, 3, 0, 1, 4, 5)
-        output= self.reshape_special(yt_upsample)
-
+        if self.bias:
+            yt_upsample= torch.matmul(yt, self.weights) + self.biases  #shape: (yt_img_size**2, batch_size, upscale_factor**2)
+        else:yt_upsample= torch.matmul(yt, self.weights)  #shape: (yt_img_size**2, batch_size, upscale_factor**2)
+            
+        yt_upsample = yt_upsample.view(self.yt_img_size, self.yt_img_size, batch_size, self.upscale_factor, self.upscale_factor).permute(2, 0, 3, 1, 4) # shape: (batch_size, yt_img_size, upscale_factor, yt_img_size, upscale_factor)
+        yt_upsample= yt_upsample.reshape(batch_size, self.recon_img_size, self.recon_img_size).unsqueeze(dim= 1) # shape: (batch_size, 1, yt_img_size*upscale_factor, yt_img_size*upscale_factor)
+        output= self.seq_block(yt_upsample) # shape: (batch_size, T, recon_img_size, recon_img_size)                    
         return output
                 
-    def reshape_special(self, a): 
+    def reshape_special(self, a):  # not used. Kept to use if needed
         '''
         input
         ----
