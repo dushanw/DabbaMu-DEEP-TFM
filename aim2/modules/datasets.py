@@ -32,7 +32,7 @@ def mnistdigits(img_size, delta, num_samples_train): #num_samples will not be us
     return trainset, valset, testset
 
 def mnistdigits_grid2patch(img_size, delta, num_samples_train):
-    data_dir= "/n/home06/udithhaputhanthri/project_udith/datasets/mnistgrid_imgsize(32)_v2"
+    data_dir= "/n/home06/udithhaputhanthri/project_udith/datasets/mnistgrid_mnistsize(32)_imgsize(320)_v2"
     
     trainset = mnistgrid_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
     valset= mnistgrid_getdataset(img_size, 'val', delta, data_dir)
