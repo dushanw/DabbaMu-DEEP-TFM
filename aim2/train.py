@@ -20,7 +20,7 @@ from modules.models.forward_H import modelH_class
 from modules.models.decoder import *
 from modules.models.decoder_upsampling_nets import *
 from modules.models.decoder_upsampling_nets_experimental import *
-
+from modules.models.decoder_support_blocks import conv_bn_block
 from modules.m_inc_procs import *
 from modules.datasets import *
 
@@ -82,6 +82,7 @@ def run(config_file=None, opts=None, save_special=False):
     ## decoder params:
     decoder_name= eval(cfg.MODEL.MODEL_DECODER.name)
     upsampling_net_name = eval(cfg.MODEL.MODEL_DECODER.upsample_net)
+    custom_upsampling_bias= cfg.MODEL.MODEL_DECODER.custom_upsampling_bias
     decoder_upsample_init_method= cfg.MODEL.MODEL_DECODER.upsample_net_init_method
     channel_list=cfg.MODEL.MODEL_DECODER.channel_list
     lr_decoder= cfg.MODEL.MODEL_DECODER.lr_decoder
@@ -125,7 +126,10 @@ def run(config_file=None, opts=None, save_special=False):
                          scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real)
     
-    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach())
+    upsample_postproc_block= nn.Sequential(conv_bn_block(in_channels= 1, out_channels= T//2, kernel_size= 3, padding= 1, stride=1),
+                                           conv_bn_block(in_channels= T//2, out_channels= T, kernel_size= 3, padding= 1, stride=1))
+        
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach(), custom_upsampling_bias= custom_upsampling_bias, upsample_postproc_block= upsample_postproc_block)
     decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation, decoder_upsample_net).to(device)
 
     
