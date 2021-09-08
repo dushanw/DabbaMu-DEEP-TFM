@@ -43,17 +43,11 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
     
     if show_interested_img_names:print('interested_imgs : ', '\n'.join(interested_imgs))
     
-    try:
-        ax1_labels = sorted(dict_[interested_key1], key =float)
-    except:
-        ax1_labels = dict_[interested_key1]
-        
-    try:
-        ax2_labels = sorted(dict_[interested_key2], key =float)
-    except:
-        ax2_labels = dict_[interested_key2]
+    ax1_labels = dict_[interested_key1]
+    ax2_labels = dict_[interested_key2]
     
     metric_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype='float')
+    epoch_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype='int')
     
     def imgdir2metric(img_name):return get_metric(img_name)[metric_name]
     
@@ -73,15 +67,44 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
 
             metric_dict = get_metric(selected_img_dir)
             metric_map[i, j]= metric_dict[metric_name]
-                
-    return metric_map, ax1_labels, ax2_labels
+            
+            epoch= int(selected_img_dir.split('/')[-1].split('_')[0])
+            epoch_map[i, j]= epoch
+    return metric_map, epoch_map, ax1_labels, ax2_labels
 
-def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, highlrH, lowlrH, vmin, vmax, x_ticks, y_ticks, interested_key1, interested_key2, override_dict, metric_name, save_dir):
+def combine_heatmap_with_epochs(metric_heatmap, epoch_matrix, epoch2m_func=None):
+    assert metric_heatmap.shape== epoch_matrix.shape, 'Metric heatmap and epoch matrix have different shapes !!!'
+    metric_heatmap= np.round(metric_heatmap, 5) 
     
+    h, w= metric_heatmap.shape
+    output_map= np.zeros_like(metric_heatmap).astype('str')
+    for i in range(h):
+        for j in range(w):
+            m = epoch2m_func(epoch_matrix[i, j])
+            entry= f'{metric_heatmap[i, j]} (m:{m})'
+            output_map[i, j]= entry
+    return output_map
+
+def epoch2m(epoch):
+    epoch_threshold= 80
+    epoch_steps= 10
+    m_inc_step= 1
+
+    if epoch<=epoch_threshold:
+        m=1
+    else:
+        m= 1+((epoch-epoch_threshold)//epoch_steps)*m_inc_step
+    return m
+
+def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epochs_map_lowlrH, highlrH, lowlrH, vmin, vmax, x_ticks, y_ticks, interested_key1, interested_key2, override_dict, metric_name, save_dir):
+    
+    print('******************* WARNING !!! :: m_inc_method :: inc_m_class(epoch_threshold= 80, epoch_steps= 10) is assumed !!! ********************')
     if highlrH!= None and lowlrH!=None:
-        plt.figure(figsize= (15,3))
+        plt.figure(figsize= (5*len(y_ticks),3))
         plt.subplot(1,2,1)
-        ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
+        #ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=map_highlrH, vmin=vmin, vmax= vmax, fmt= '.5f')
+        ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=combine_heatmap_with_epochs(metric_map_highlrH, epochs_map_highlrH, epoch2m), vmin=vmin, vmax= vmax, fmt= "")
+
         plt.xticks(np.arange(len(y_ticks))+0.5, y_ticks, rotation=0)
         plt.xlabel(interested_key2)
         plt.yticks(np.arange(len(x_ticks))+0.5, x_ticks, rotation=0)
@@ -89,7 +112,8 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, highlrH, lowlrH, vmin, v
         plt.title(f'lr(Ht) : {highlrH}')
 
         plt.subplot(1,2,2)
-        ax = sns.heatmap(metric_map_lowlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
+        #ax = sns.heatmap(metric_map_lowlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
+        ax = sns.heatmap(metric_map_lowlrH, linewidth=0.5, annot=combine_heatmap_with_epochs(metric_map_lowlrH, epochs_map_lowlrH, epoch2m), vmin=vmin, vmax= vmax, fmt= "")
         plt.xticks(np.arange(len(y_ticks))+0.5, y_ticks, rotation=0)
         plt.xlabel(interested_key2)
         plt.yticks(np.arange(len(x_ticks))+0.5, x_ticks, rotation=0)
@@ -123,7 +147,9 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, highlrH, lowlrH, vmin, v
         assert (metric_map_highlrH== metric_map_lowlrH).all(), 'lr_H not specified and different lr_Hs are found !!!'
         
         plt.figure(figsize= (8,3))
-        ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
+        #ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
+        ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=combine_heatmap_with_epochs(metric_map_highlrH, epochs_map_highlrH, epoch2m), vmin=vmin, vmax= vmax, fmt= "")
+
         plt.xticks(np.arange(len(y_ticks))+0.5, y_ticks, rotation=0)
         plt.xlabel(interested_key2)
         plt.yticks(np.arange(len(x_ticks))+0.5, x_ticks, rotation=0)
@@ -153,15 +179,15 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, highlrH, lowlrH, vmin, v
     
     
 def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1, interested_key2, override_dict, metric_name= 'SSIM', save_dir =None, show_interested_img_names= False):
-    map_highlrH, xticks_highlrH, yticks_highlrH = create_metric_map(img_list, attr_dict_highlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
-    map_lowlrH, xticks_lowlrH, yticks_lowlrH = create_metric_map(img_list, attr_dict_lowlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
+    map_metric_highlrH, map_epochs_highlrH, xticks_highlrH, yticks_highlrH = create_metric_map(img_list, attr_dict_highlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
+    map_metric_lowlrH, map_epochs_lowlrH, xticks_lowlrH, yticks_lowlrH = create_metric_map(img_list, attr_dict_lowlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
 
     
     assert xticks_highlrH== xticks_lowlrH, 'Missing lowLR/ highHR images'
     assert yticks_highlrH== yticks_lowlrH, 'Missing lowLR/ highHR images'
 
-    vmin = min(map_highlrH.min(), map_lowlrH.min())
-    vmax =  max(map_highlrH.max(), map_lowlrH.max())
+    vmin = min(map_metric_highlrH.min(), map_metric_lowlrH.min())
+    vmax =  max(map_metric_highlrH.max(), map_metric_lowlrH.max())
 
     if 'lr_H' in attr_dict_highlrH and 'lr_H' in attr_dict_lowlrH :
         highlrH = attr_dict_highlrH['lr_H']
@@ -169,7 +195,7 @@ def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested
     else:
         highlrH, lowlrH= None, None
     
-    plot_heatmap(map_highlrH, map_lowlrH, highlrH, lowlrH, vmin, vmax, xticks_highlrH, yticks_highlrH, interested_key1, interested_key2, override_dict, metric_name, save_dir)
+    plot_heatmap(map_metric_highlrH, map_metric_lowlrH, map_epochs_highlrH, map_epochs_lowlrH, highlrH, lowlrH, vmin, vmax, xticks_highlrH, yticks_highlrH, interested_key1, interested_key2, override_dict, metric_name, save_dir)
     
     
     
