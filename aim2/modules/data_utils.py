@@ -43,7 +43,8 @@ class mnistgrid_getdataset(torch.utils.data.Dataset):
         #apply same random crop for image with same idx. What this do is, creating a unique random crop margins for each image in the dataset (can be train/ validation/ test). So it makes this random cropped datasets fixed as normal datasets but preserving the complexity.
         # Note that, if we apply this only to validation and test sets, it results unlimited large training set because for every epoch, it generates entirely new batches. This will not be similar to real situations where we have limited amount of data. So it is better to keep the randomness fixed for each image. 
         
-        output = self.transform(Image.fromarray(plt.imread(self.img_list[idx]))), torch.tensor(1) # 2nd output-> to maintain consistency across all MNIST dataloaders
+        try:output = self.transform(Image.fromarray(plt.imread(self.img_list[idx]))), torch.tensor(1) # 2nd output-> to maintain consistency across all MNIST dataloaders
+        except:print('error : ', plt.imread(self.img_list[idx]).shape, self.img_list[idx])
         torch.manual_seed(np.random.randint(0, 500000))
         return output
     
