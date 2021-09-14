@@ -31,7 +31,7 @@ def evaluate(device, loader, model_decoder, model_A, model_H, classifier, rescal
     return np.mean(acc_on_real), np.mean(acc_on_fake)
 
 
-def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, metrics = None):
+def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, metrics = None):
     losses_temp = []
     metric_ssim11_temp = []
     metric_ssim5_temp = []
@@ -52,8 +52,11 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
             # train_model
             for _ in range(train_model_iter):
                 Ht= model_H(m)
+                
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
                 opt_model.step()
@@ -61,8 +64,11 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
             #train H
             for _ in range(train_H_iter):
                 Ht= model_H(m)
+                
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                
                 loss = criterion(X_hat, X)
                 loss.backward(retain_graph=True)
                 
@@ -73,8 +79,11 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
             with torch.no_grad():
                 X= x.float()
                 Ht= model_H(m)
+                
                 yt = model_A.compute_yt(X, Ht)
-                X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+                
                 loss = criterion(X_hat, X)
         losses_temp.append(loss.item())
         
@@ -92,7 +101,7 @@ def loop(device, loader, model_decoder, model_A, model_H, criterion, opt, type_=
     
     return losses, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics
 
-def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
+def train(model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
     
     T= model_H.T
     
@@ -113,11 +122,11 @@ def train(model_decoder, model_A, model_H, criterion, opt, train_loader, test_lo
         print(f'm : {m}')
         
         start_train = time.time()
-        losses_train, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics = loop(device, train_loader, model_decoder, model_A, model_H, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, metrics)
+        losses_train, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics = loop(device, train_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, metrics)
         end_train= time.time()
         
         start_val = time.time()
-        losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val)
+        losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val)
         end_val= time.time()
         
         with open(f"{save_dir}/details.txt", 'a') as f:

@@ -129,8 +129,8 @@ def run(config_file=None, opts=None, save_special=False):
     upsample_postproc_block= nn.Sequential(conv_bn_block(in_channels= 1, out_channels= T//2, kernel_size= 3, padding= 1, stride=1),
                                            conv_bn_block(in_channels= T//2, out_channels= T, kernel_size= 3, padding= 1, stride=1))
         
-    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach(), custom_upsampling_bias= custom_upsampling_bias, upsample_postproc_block= upsample_postproc_block)
-    decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation, decoder_upsample_net).to(device)
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach(), custom_upsampling_bias= custom_upsampling_bias, upsample_postproc_block= upsample_postproc_block).to(device)
+    decoder= decoder_name(T, img_size, img_channels, channel_list, last_activation).to(device)
 
     
     ###
@@ -139,7 +139,7 @@ def run(config_file=None, opts=None, save_special=False):
     ###
     
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)
-    opt_decoder= torch.optim.Adam(decoder.parameters(), lr= lr_decoder)
+    opt_decoder= torch.optim.Adam([{'params': decoder.parameters()}, {'params': decoder_upsample_net.parameters()}], lr= lr_decoder)
     ###
 
-    train(decoder, modelA, modelH, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)
+    train(decoder, decoder_upsample_net, modelA, modelH, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)
