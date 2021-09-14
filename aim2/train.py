@@ -24,6 +24,8 @@ from modules.models.decoder_support_blocks import conv_bn_block
 from modules.m_inc_procs import *
 from modules.datasets import *
 
+from modules.models.lambdat_yt_skips import *
+
 
 def run(config_file=None, opts=None, save_special=False):
     cfg = get_cfg_defaults()
@@ -87,6 +89,9 @@ def run(config_file=None, opts=None, save_special=False):
     channel_list=cfg.MODEL.MODEL_DECODER.channel_list
     lr_decoder= cfg.MODEL.MODEL_DECODER.lr_decoder
     last_activation=cfg.MODEL.MODEL_DECODER.last_activation #'sigmoid'
+    
+    connect_forward_inverse= eval(cfg.MODEL.MODEL_DECODER.connect_forward_inverse)
+    print(f'skip connection between FORWARD and INVERSE models :: {cfg.MODEL.MODEL_DECODER.connect_forward_inverse}')
     ########################################################################
     
     if lr_H==0:enable_train= False
@@ -142,4 +147,4 @@ def run(config_file=None, opts=None, save_special=False):
     opt_decoder= torch.optim.Adam([{'params': decoder.parameters()}, {'params': decoder_upsample_net.parameters()}], lr= lr_decoder)
     ###
 
-    train(decoder, decoder_upsample_net, modelA, modelH, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)
+    train(decoder, decoder_upsample_net, modelA, modelH, connect_forward_inverse, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)

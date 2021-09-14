@@ -29,21 +29,22 @@ class modelA_class:
         return yt
 
     def compute_yt(self, X, H):    
-        lambda_= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(self.device)
+        lambda_up= torch.zeros((X.shape[0], H.shape[1], X.shape[2], X.shape[3])).to(self.device)
         for t in range(H.shape[1]):
-            lambda_[:, t:t+1, :, :]= self.forward_model_singleH(X, H[:,t:t+1,:,:])
+            lambda_up[:, t:t+1, :, :]= self.forward_model_singleH(X, H[:,t:t+1,:,:])
             
         for _ in range(self.scale_factor-1): # downscaling
-            lambda_ = F.avg_pool2d(lambda_, kernel_size= 2, stride=2, padding=0)*4
+            if _==0:lambda_down = F.avg_pool2d(lambda_up, kernel_size= 2, stride=2, padding=0)*4
+            else:lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
 
         if self.noise==True: # add noise
-            z= torch.randn_like(lambda_)         
-            yt = lambda_ + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
+            z= torch.randn_like(lambda_down)         
+            yt_down = lambda_down + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_down/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
         else:
-            yt=lambda_
+            yt_down=lambda_down
             
         #for _ in range(self.scale_factor-1): # upscaling
         #    yt= F.interpolate(yt, scale_factor= 2, mode='bicubic')
             
         
-        return yt ## returns downsampled image with/ without noise
+        return lambda_up, yt_down ## returns downsampled image with/ without noise

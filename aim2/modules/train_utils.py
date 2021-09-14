@@ -22,16 +22,19 @@ def evaluate(device, loader, model_decoder, model_A, model_H, classifier, rescal
         with torch.no_grad():
             X= x.float()
             Ht= model_H(m)
-            yt = model_A.compute_yt(X, Ht)
-            X_hat = model_decoder(yt, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
+            lambda_up, yt_down = model_A.compute_yt(X, Ht)
+            yt_up = model_decoder_upsample(yt_down, Ht= Ht) + connect_forward_inverse(lambda_up, epoch)
+            X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture   
             
             acc_on_real.append(accuracy(y, classifier(X*rescale_std+rescale_mean)))
             acc_on_fake.append(accuracy(y, classifier(X_hat*rescale_std+rescale_mean)))
             
     return np.mean(acc_on_real), np.mean(acc_on_fake)
 
-
-def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, metrics = None):
+def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, type_= 'train', losses = [], epoch= None, m=1, train_model_iter=1, train_H_iter=0, metrics = None, connect_forward_inverse= None):
+    
+    if connect_forward_inverse== None:connect_forward_inverse= no_skips
+    
     losses_temp = []
     metric_ssim11_temp = []
     metric_ssim5_temp = []
@@ -53,8 +56,8 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
             for _ in range(train_model_iter):
                 Ht= model_H(m)
                 
-                yt = model_A.compute_yt(X, Ht)
-                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                lambda_up, yt_down = model_A.compute_yt(X, Ht)
+                yt_up = model_decoder_upsample(yt_down, Ht= Ht) + connect_forward_inverse(lambda_up, epoch)
                 X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 
                 loss = criterion(X_hat, X)
@@ -65,8 +68,8 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
             for _ in range(train_H_iter):
                 Ht= model_H(m)
                 
-                yt = model_A.compute_yt(X, Ht)
-                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                lambda_up, yt_down = model_A.compute_yt(X, Ht)
+                yt_up = model_decoder_upsample(yt_down, Ht= Ht) + connect_forward_inverse(lambda_up, epoch)
                 X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 
                 loss = criterion(X_hat, X)
@@ -80,8 +83,8 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
                 X= x.float()
                 Ht= model_H(m)
                 
-                yt = model_A.compute_yt(X, Ht)
-                yt_up = model_decoder_upsample(yt, Ht= Ht)
+                lambda_up, yt_down = model_A.compute_yt(X, Ht)
+                yt_up = model_decoder_upsample(yt_down, Ht= Ht) + connect_forward_inverse(lambda_up, epoch)
                 X_hat = model_decoder(yt_up, Ht= Ht) # Ht will be used if Ht should be updated through decoder, Therefore depend on the decoder architecture
                 
                 loss = criterion(X_hat, X)
@@ -92,16 +95,16 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
         metric_mse_temp.append(mse_distance(X_hat, X))
         
     
-    print(f'yt range ({type_}): [{yt.min()} {yt.max()}]')
+    print(f'after {epoch} epochs... yt_down range ({type_}): [{yt_down.min()} {yt_down.max()}]')
     losses.append(np.mean(losses_temp))
     
     metrics['ssim11'].append(np.mean(metric_ssim11_temp))
     metrics['ssim5'].append(np.mean(metric_ssim5_temp))
     metrics['mse'].append(np.mean(metric_mse_temp))
     
-    return losses, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics
+    return losses, model_decoder, opt, X, X_hat, Ht, yt_down, model_H, metrics
 
-def train(model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
+def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forward_inverse, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
     
     T= model_H.T
     
@@ -122,11 +125,11 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, criterion, op
         print(f'm : {m}')
         
         start_train = time.time()
-        losses_train, model_decoder, opt, X, X_hat, Ht, yt, model_H, metrics = loop(device, train_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, metrics)
+        losses_train, model_decoder, opt, X, X_hat, Ht, yt_down, model_H, metrics = loop(device, train_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'train', losses_train, epoch, m, train_model_iter, train_H_iter, metrics, connect_forward_inverse)
         end_train= time.time()
         
         start_val = time.time()
-        losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val)
+        losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_down_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val, connect_forward_inverse)
         end_val= time.time()
         
         with open(f"{save_dir}/details.txt", 'a') as f:
@@ -141,14 +144,14 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, criterion, op
         if epoch%show_results_epoch==0:
             if classifier==None:
                 class_acc_on_real, class_acc_on_fake=None, None
-            show_imgs(X_val, Ht_val, X_hat_val, yt_val, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m) 
+            show_imgs(X_val, Ht_val, X_hat_val, yt_down_val, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m) 
             
             if save_special_bool==True:
                 save_special_dir= f'{save_dir}/save_special'
                 try:os.mkdir(save_special_dir)
                 except:pass
                 
-                save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, f'{save_dir}/save_special')
+                save_special(X_val, Ht_val, X_hat_val, yt_down_val, epoch, f'{save_dir}/save_special')
                 
         
             
