@@ -50,4 +50,4 @@ MODEL:
     channel_list: [4, 3, 2]
     lr_decoder: 0.001
     last_activation: None
-
+    connect_forward_inverse: 'no_skips'
