@@ -33,7 +33,10 @@ def get_override_dict_list(all_overrides_dict):
 
     return override_dict_list
 
-def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T', interested_key2 = 'lambda_scale_factor', override_dict= {}, show_interested_img_names= False):
+def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T', interested_key2 = 'lambda_scale_factor', override_dict= {}, show_interested_img_names= False, plot_label_dict= None):
+    if 'last_converged_' in metric_name: #eg: metric_name: last_converged_MSE -> which means no matter what we have choosen the last converged result. 
+        metric_name= metric_name.split('_')[-1]
+    
     for key_ in override_dict:
         dict_[key_] = override_dict[key_]
     
@@ -70,6 +73,12 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
             
             epoch= int(selected_img_dir.split('/')[-1].split('_')[0])
             epoch_map[i, j]= epoch
+            
+            
+    if plot_label_dict!= None: ### Use given axis labels
+        ax1_labels = plot_label_dict[interested_key1]
+        ax2_labels = plot_label_dict[interested_key2]
+    
     return metric_map, epoch_map, ax1_labels, ax2_labels
 
 def combine_heatmap_with_epochs(metric_heatmap, epoch_matrix, epoch2m_func=None):
@@ -81,12 +90,13 @@ def combine_heatmap_with_epochs(metric_heatmap, epoch_matrix, epoch2m_func=None)
     for i in range(h):
         for j in range(w):
             m = epoch2m_func(epoch_matrix[i, j])
-            entry= f'{metric_heatmap[i, j]} (m:{m})'
+            #entry= f'{metric_heatmap[i, j]} (m:{m})'
+            entry= f'{metric_heatmap[i, j]}/{epoch_matrix[i, j]}'
             output_map[i, j]= entry
     return output_map
 
 def epoch2m(epoch):
-    epoch_threshold= 80
+    epoch_threshold= 1000
     epoch_steps= 10
     m_inc_step= 1
 
@@ -146,7 +156,7 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epoc
         
         assert (metric_map_highlrH== metric_map_lowlrH).all(), 'lr_H not specified and different lr_Hs are found !!!'
         
-        plt.figure(figsize= (8,3))
+        plt.figure(figsize= (2*len(y_ticks),3))
         #ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=True, vmin=vmin, vmax= vmax, fmt= '.5f')
         ax = sns.heatmap(metric_map_highlrH, linewidth=0.5, annot=combine_heatmap_with_epochs(metric_map_highlrH, epochs_map_highlrH, epoch2m), vmin=vmin, vmax= vmax, fmt= "")
 
@@ -178,9 +188,9 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epoc
         plt.show()
     
     
-def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1, interested_key2, override_dict, metric_name= 'SSIM', save_dir =None, show_interested_img_names= False):
-    map_metric_highlrH, map_epochs_highlrH, xticks_highlrH, yticks_highlrH = create_metric_map(img_list, attr_dict_highlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
-    map_metric_lowlrH, map_epochs_lowlrH, xticks_lowlrH, yticks_lowlrH = create_metric_map(img_list, attr_dict_lowlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names)
+def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1, interested_key2, override_dict, metric_name= 'SSIM', save_dir =None, show_interested_img_names= False, plot_label_dict= None):
+    map_metric_highlrH, map_epochs_highlrH, xticks_highlrH, yticks_highlrH = create_metric_map(img_list, attr_dict_highlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names, plot_label_dict= plot_label_dict)
+    map_metric_lowlrH, map_epochs_lowlrH, xticks_lowlrH, yticks_lowlrH = create_metric_map(img_list, attr_dict_lowlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names, plot_label_dict= plot_label_dict)
 
     
     assert xticks_highlrH== xticks_lowlrH, 'Missing lowLR/ highHR images'
@@ -199,7 +209,7 @@ def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested
     
     
     
-def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list, mode, save_dir, show_interested_img_names= False, low_lr_H= '0.0', high_lr_H= '1.0'):
+def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list, mode, save_dir, show_interested_img_names= False, low_lr_H= '0.0', high_lr_H= '1.0', plot_label_dict= None):
     plot_axes_variables= list(plot_vars_dict.keys())
     
     attr_dict_lowlrH = plot_vars_dict.copy()
@@ -220,7 +230,7 @@ def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list,
     for override_dict in overrides_dict_list:
         print(f'override dict : {override_dict}')
 
-        plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1 = plot_axes_variables[0], interested_key2= plot_axes_variables[1], override_dict=override_dict, metric_name= mode, save_dir =save_dir, show_interested_img_names= show_interested_img_names)
+        plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1 = plot_axes_variables[0], interested_key2= plot_axes_variables[1], override_dict=override_dict, metric_name= mode, save_dir =save_dir, show_interested_img_names= show_interested_img_names, plot_label_dict= plot_label_dict)
     print('ploting heatmaps finished !!!')
     
     if save_dir !=None:
