@@ -6,7 +6,7 @@ from modules.summarizing_utils.sorting_methods import sort_name_by_epoch
 from modules.summarizing_utils.filter_results_utils import get_metric
 
 
-def find_last_converged_result(img_dir, loss_threshold=0.05):
+def find_last_converged_correct_result(img_dir, loss_threshold=0.05):
     img_list = sorted(glob.glob(f"{img_dir}/*.jpg"),key= sort_name_by_epoch, reverse=True)
     for img_dir in img_list:
         loss= float(img_dir.split('(')[-1][:-5])
@@ -20,6 +20,22 @@ def find_last_converged_result(img_dir, loss_threshold=0.05):
     
     print(f'####   no image found : {img_dir}')
     return None
+
+
+def find_last_converged_result(img_dir, metric_name='SSIM', metric_type= 'score'): #metric_type= loss/ score
+    img_list = sorted(glob.glob(f"{img_dir}/*.jpg"),key= sort_name_by_epoch, reverse=True)
+    min_loss=1000
+    final_img_dir= None
+    
+    metric_list=[]
+    for img_dir in img_list:
+        metric_dict = get_metric(img_dir)
+        metric = metric_dict[metric_name]
+        if metric!='nan':return img_dir
+  
+    print(f'####   no image found : {img_dir}')
+    return None
+
 
 
 def find_best_result(img_dir, metric_name='SSIM', metric_type= 'score'): #metric_type= loss/ score
@@ -69,7 +85,8 @@ def get_img_list(img_dir = 'figs/mnistv6', mode='L1Loss', loss_threshold=0.05):
         #if idx>102:break
         exp_dir = exp_list[idx]
             
-        if mode=='last_converged':img_dir = find_last_converged_result(exp_dir, loss_threshold)
+        if mode=='last_converged_correct':img_dir = find_last_converged_correct_result(exp_dir, loss_threshold)
+        elif mode=='last_converged_MSE':img_dir = find_last_converged_result(exp_dir, metric_name='MSE', metric_type= 'loss')
         elif mode=='L1Loss':img_dir = find_best_result(exp_dir, metric_name='L1Loss', metric_type= 'loss')
         elif mode=='MSE':img_dir = find_best_result(exp_dir, metric_name='MSE', metric_type= 'loss')
         elif mode=='SSIM':img_dir = find_best_result(exp_dir, metric_name='SSIM', metric_type= 'score')
