@@ -15,7 +15,7 @@ def get_available_attr(img_list):
     attr_dict = {}
     for img_dir in img_list:
         for attr in img_dir.split('/')[-2].split('@'):
-            attr_name, attr_value = attr.split('(')[0], attr.split('(')[1][:-1]
+            attr_name, attr_value = attr.split('(')[0], '('.join(attr.split('(')[1:])[:-1]
             if attr_name not in attr_dict.keys():
                 attr_dict[attr_name] = [attr_value]
             else:
