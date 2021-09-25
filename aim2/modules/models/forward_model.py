@@ -33,9 +33,12 @@ class modelA_class:
         for t in range(H.shape[1]):
             lambda_up[:, t:t+1, :, :]= self.forward_model_singleH(X, H[:,t:t+1,:,:])
             
+        lambda_down= lambda_up
         for _ in range(self.scale_factor-1): # downscaling
-            if _==0:lambda_down = F.avg_pool2d(lambda_up, kernel_size= 2, stride=2, padding=0)*4
-            else:lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
+            lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
+            
+            #if _==0:lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
+            #else:lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
 
         if self.noise==True: # add noise
             z= torch.randn_like(lambda_down)         
