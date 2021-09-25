@@ -22,3 +22,53 @@ general_opts= ['TRAIN.show_results_epoch', '1',
                'TRAIN.epochs', '1']
 
 do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+
+------------------------
+
+device = 'cuda:0'
+
+exps = {
+    'DATASET.img_size': ['512'], #['512'], #'128', '256' -> create a dataset
+    'DATASET.num_samples_train': ['3000'], #['600', '3000'], #['600', '3000', '6000'], #'20000'
+    'MODEL.MODEL_DECODER.upsample_net': ['custom_v2'], # ['custom_v2', 'learnable_transpose_conv']
+    'MODEL.MODEL_DECODER.connect_forward_inverse' : ['squared_decaying_weighted_skips(zero_weight_epoch= 300, epoch_step=1)',
+                                                    'squared_decaying_weighted_skips(zero_weight_epoch= 300, epoch_step=3)',
+                                                    'squared_decaying_weighted_skips(zero_weight_epoch= 300, epoch_step=5)',
+                                                    'squared_decaying_weighted_skips(zero_weight_epoch= 300, epoch_step=10)',
+                                                    'no_skips'],
+    'TRAIN.m_inc_proc':  ['inc_m_class(epoch_threshold= 1000, epoch_steps= 10)'] # no_m_inc
+}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+               'TRAIN.epochs', '500',
+
+               'MODEL.MODEL_DECODER.upsample_net_init_method', 'xavier_normal', #'Ht_based OR xavier_normal'
+               'MODEL.MODEL_DECODER.custom_upsampling_bias', 'True', #keep bias True
+               
+               'MODEL.MODEL_H.lr_H', '1.0',
+               'MODEL.MODEL_A.lambda_scale_factor', '4',
+               'MODEL.MODEL_A.rotation_lambda', '10000.0',
+               'MODEL.MODEL_H.T', '8',
+              ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+----------------------------------------
+
+device = 'cuda:0'
+
+exps = {
+                    'MODEL.MODEL_A.lambda_scale_factor': ['1','2','3','4'],
+                    'MODEL.MODEL_H.T': ['1','2','4', '8', '16', '32'],
+                    'MODEL.MODEL_A.rotation_lambda': ['10.0', '10000.0'],
+                    'MODEL.MODEL_H.lr_H': ['0.0', '1.0'],
+                    'DATASET.img_size':  ['256'],
+                    'DATASET.num_samples_train': ['3000']}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150',
+                'MODEL.MODEL_DECODER.upsample_net', 'custom_v2',
+                ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
