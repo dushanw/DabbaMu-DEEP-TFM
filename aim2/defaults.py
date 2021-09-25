@@ -39,8 +39,8 @@ _C.MODEL.MODEL_H.lr_H= 0.0
 _C.MODEL.MODEL_A = CN()
 _C.MODEL.MODEL_A.sPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.exPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
-_C.MODEL.MODEL_A.noise=False
-_C.MODEL.MODEL_A.lambda_scale_factor=1 # downsample
+_C.MODEL.MODEL_A.noise=True
+_C.MODEL.MODEL_A.lambda_scale_factor=4 # downsample
 _C.MODEL.MODEL_A.rotation_lambda=1000.0
 _C.MODEL.MODEL_A.shift_lambda_real=10.0
 
@@ -48,7 +48,7 @@ _C.MODEL.MODEL_DECODER = CN()
 _C.MODEL.MODEL_DECODER.name= 'genv1'
 _C.MODEL.MODEL_DECODER.upsample_net= 'bicubic_interp' ## define in modules.models.decoder_upsampling_nets
 _C.MODEL.MODEL_DECODER.custom_upsampling_bias= True
-_C.MODEL.MODEL_DECODER.upsample_net_init_method= 'xavier_normal'
+_C.MODEL.MODEL_DECODER.upsample_net_init_method= 'xavier_normal' ## current best performed initialization
 _C.MODEL.MODEL_DECODER.channel_list=[24, 12, 8, 4, 2]
 _C.MODEL.MODEL_DECODER.lr_decoder= 0.001
 _C.MODEL.MODEL_DECODER.last_activation='sigmoid'
