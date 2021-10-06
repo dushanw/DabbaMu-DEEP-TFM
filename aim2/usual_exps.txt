@@ -72,3 +72,50 @@ general_opts= ['TRAIN.show_results_epoch', '5',
                 ]
 
 do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+--------------------
+
+device = 'cuda:1'
+
+exps = {
+    'DATASET.name': ['mnistdigits_grid2patch'], #'confocal256'
+    'MODEL.MODEL_DECODER.upsample_net': ['learnable_transpose_conv'], #'learnable_transpose_conv'
+    'MODEL.MODEL_A.noise': ['True', 'False'],    
+
+    'DATASET.img_size':  ['128'], 
+    'DATASET.num_samples_train': ['600']#['600']
+}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+               'TRAIN.epochs', '150',
+               
+               'MODEL.MODEL_H.T', '8',
+               'MODEL.MODEL_A.rotation_lambda', '1000.0',
+               'MODEL.MODEL_A.lambda_scale_factor', '4',
+               'MODEL.MODEL_H.lr_H', '1.0',
+              ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+-------------------
+
+device = 'cuda:0'
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10000.0'], #'10.0' 
+        'MODEL.MODEL_A.lambda_scale_factor': ['1','2','3','4'],
+        'MODEL.MODEL_H.T': ['1','2','4', '8', '16', '32'],
+        'MODEL.MODEL_H.lr_H': ['0.0'],
+    
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000']}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150',
+                'MODEL.MODEL_DECODER.upsample_net', 'custom_v2',
+                ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+----------------------------
+
