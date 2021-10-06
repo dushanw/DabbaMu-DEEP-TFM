@@ -189,6 +189,7 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epoc
     
     
 def plot_all_heat_maps(img_list, attr_dict_highlrH, attr_dict_lowlrH, interested_key1, interested_key2, override_dict, metric_name= 'SSIM', save_dir =None, show_interested_img_names= False, plot_label_dict= None):
+
     map_metric_highlrH, map_epochs_highlrH, xticks_highlrH, yticks_highlrH = create_metric_map(img_list, attr_dict_highlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names, plot_label_dict= plot_label_dict)
     map_metric_lowlrH, map_epochs_lowlrH, xticks_lowlrH, yticks_lowlrH = create_metric_map(img_list, attr_dict_lowlrH, metric_name=metric_name, interested_key1= interested_key1, interested_key2 = interested_key2, override_dict= override_dict, show_interested_img_names= show_interested_img_names, plot_label_dict= plot_label_dict)
 
