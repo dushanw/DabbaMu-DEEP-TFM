@@ -76,10 +76,13 @@ def run(config_file=None, opts=None, save_special=False):
     ## params to A
     sPSF= eval(cfg.MODEL.MODEL_A.sPSF)
     exPSF= eval(cfg.MODEL.MODEL_A.exPSF)
+    
     noise=cfg.MODEL.MODEL_A.noise
-    scale_factor=cfg.MODEL.MODEL_A.lambda_scale_factor # downsample
+    lambda_scale_factor=cfg.MODEL.MODEL_A.lambda_scale_factor # downsample
     rotation_lambda=cfg.MODEL.MODEL_A.rotation_lambda
     shift_lambda_real=cfg.MODEL.MODEL_A.shift_lambda_real
+    
+    readnoise_std=cfg.MODEL.MODEL_A.readnoise_std
 
     ## decoder params:
     decoder_name= eval(cfg.MODEL.MODEL_DECODER.name)
@@ -125,11 +128,12 @@ def run(config_file=None, opts=None, save_special=False):
                           device = device, 
                           initialization_bias=initialization_bias, 
                           activation = H_activation, init_method= H_init, 
-                          enable_train=enable_train, lambda_scale_factor= scale_factor).to(device)
+                          enable_train=enable_train, lambda_scale_factor= lambda_scale_factor).to(device)
     
-    modelA= modelA_class(sPSF= sPSF, exPSF= exPSF, noise=noise, device = device, 
-                         scale_factor=scale_factor, rotation_lambda=rotation_lambda, 
-                         shift_lambda_real= shift_lambda_real)
+    modelA= modelA_class(sPSF= sPSF.to(device), exPSF= exPSF.to(device), noise=noise, device = device, 
+                         scale_factor=lambda_scale_factor, rotation_lambda=rotation_lambda, 
+                         shift_lambda_real= shift_lambda_real,
+                         readnoise_std= readnoise_std)
     
     if T!=1:
         upsample_postproc_block= nn.Sequential(conv_bn_block(in_channels= 1, out_channels= T//2, kernel_size= 3, padding= 1, stride=1),
@@ -138,7 +142,7 @@ def run(config_file=None, opts=None, save_special=False):
         upsample_postproc_block= nn.Sequential(conv_bn_block(in_channels= 1, out_channels= T, kernel_size= 3, padding= 1, stride=1),
                                                conv_bn_block(in_channels= T, out_channels= T, kernel_size= 3, padding= 1, stride=1))
         
-    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach(), custom_upsampling_bias= custom_upsampling_bias, upsample_postproc_block= upsample_postproc_block)
+    decoder_upsample_net= upsampling_net_name(lambda_scale_factor= lambda_scale_factor, T= T, recon_img_size= img_size, init_method= decoder_upsample_init_method, Ht= modelH(m=1).detach(), custom_upsampling_bias= custom_upsampling_bias, upsample_postproc_block= upsample_postproc_block)
     
     if decoder_upsample_net.__class__.__bases__[0]== nn.modules.module.Module:
         decoder_upsample_net= decoder_upsample_net.to(device)

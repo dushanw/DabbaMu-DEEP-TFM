@@ -3,11 +3,12 @@ import torch
 from torch.nn import functional as F
 
 class modelA_class:
-    def __init__(self, sPSF, exPSF, noise=False, device = 'cpu', scale_factor=1, rotation_lambda=1, shift_lambda_real=0):
+    def __init__(self, sPSF, exPSF, noise=False, device = 'cpu', scale_factor=1, rotation_lambda=1, shift_lambda_real=0, readnoise_std= 0):
         self.sPSF= sPSF
         self.exPSF= exPSF
         self.device= device
         self.noise= noise # boolean
+        self.readnoise_std= readnoise_std
         
         self.scale_factor= scale_factor
         
@@ -41,8 +42,10 @@ class modelA_class:
             #else:lambda_down = F.avg_pool2d(lambda_down, kernel_size= 2, stride=2, padding=0)*4
 
         if self.noise==True: # add noise
-            z= torch.randn_like(lambda_down)         
-            yt_down = lambda_down + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_down/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z 
+            z= torch.randn_like(lambda_down)   
+            read_noise= self.readnoise_std * torch.randn_like(lambda_down) 
+            
+            yt_down = lambda_down + (self.shift_lambda_real/ self.rotation_lambda) + torch.sqrt(lambda_down/self.rotation_lambda + self.shift_lambda_real/(self.rotation_lambda**2))*z  + read_noise/ self.rotation_lambda
         else:
             yt_down=lambda_down
             
