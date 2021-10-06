@@ -37,12 +37,13 @@ _C.MODEL.MODEL_H.H_activation= 'sigmoid_custom'
 _C.MODEL.MODEL_H.lr_H= 0.0
 
 _C.MODEL.MODEL_A = CN()
-_C.MODEL.MODEL_A.sPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
-_C.MODEL.MODEL_A.exPSF= 'torch.tensor(impulse(side_len=5)).float().to(device)'
+_C.MODEL.MODEL_A.sPSF= 'impulse(side_len=5)' #'torch.tensor(impulse(side_len=5)).float().to(device)'
+_C.MODEL.MODEL_A.exPSF= 'impulse(side_len=5)' #'torch.tensor(impulse(side_len=5)).float().to(device)'
 _C.MODEL.MODEL_A.noise=True
 _C.MODEL.MODEL_A.lambda_scale_factor=4 # downsample
 _C.MODEL.MODEL_A.rotation_lambda=1000.0
 _C.MODEL.MODEL_A.shift_lambda_real=10.0
+_C.MODEL.MODEL_A.readnoise_std=0.0
 
 _C.MODEL.MODEL_DECODER = CN()
 _C.MODEL.MODEL_DECODER.name= 'genv1'
