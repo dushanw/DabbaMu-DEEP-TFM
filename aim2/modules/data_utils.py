@@ -49,6 +49,46 @@ class mnistgrid_getdataset(torch.utils.data.Dataset):
         return output
     
     
+class confocal_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+        super(confocal_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.png"), key= self.sort_by_stk_and_patch_idx)
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        
+    def sort_by_stk_and_patch_idx(self, x):
+        stk_idx = int(x.split('/')[-1][:-4].split('_')[-2][1:])
+        patch_idx = int(x.split('/')[-1][:-4].split('_')[-1])
+        return stk_idx, patch_idx
+    
+    def __len__(self):
+        return len(self.img_list)
+    
+    def __getitem__(self, idx):
+        output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
+        return output
+    
+    
     
 def return_dataloaders(trainset, valset, testset, batch_size_train= 32):
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
