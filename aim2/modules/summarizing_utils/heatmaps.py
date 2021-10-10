@@ -235,7 +235,8 @@ def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list,
     print('ploting heatmaps finished !!!')
     
     if save_dir !=None:
-        heatmap_pdf_filename = f'{save_dir}/heatmaps/summary.pdf'
+        exp_set_name= save_dir.split('/')[-1]
+        heatmap_pdf_filename = f'{save_dir}/heatmaps/heatmaps_{exp_set_name}.pdf'
         save_heatmaps2pdf(f'{save_dir}/heatmaps', heatmap_sort_function, heatmap_pdf_filename)
         print(f'quantitative results saved : {heatmap_pdf_filename}')
     else:
@@ -262,7 +263,7 @@ def save_heatmaps2pdf(heatmap_dir, heatmap_sort_function, pdf_filename):
         Story.append(Paragraph(ptext, styles["Normal"])) 
         Story.append(Spacer(1, 10))
         
-        im = Image(img_name, 8*inch, 2*inch)
+        im = Image(img_name) #8*inch, 2*inch
         Story.append(im)
         Story.append(Spacer(1, 30))
         
