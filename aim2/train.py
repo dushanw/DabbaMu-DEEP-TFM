@@ -10,7 +10,7 @@ from modules.models.preprocess_H_weights import * #ifft_2d_with_fftshift_real
 from modules.custom_activations import sigmoid_custom
 from modules.kernels import *
 
-from modules.datasets import mnistdigits, mnistdigits_grid2patch
+from modules.datasets import *
 from modules.data_utils import return_dataloaders
 
 from modules.train_utils import train
@@ -22,7 +22,6 @@ from modules.models.decoder_upsampling_nets import *
 from modules.models.decoder_upsampling_nets_experimental import *
 from modules.models.decoder_support_blocks import conv_bn_block
 from modules.m_inc_procs import *
-from modules.datasets import *
 
 from modules.models.lambdat_yt_skips import *
 
