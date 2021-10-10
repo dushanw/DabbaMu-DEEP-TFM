@@ -1,7 +1,7 @@
 import torchvision
 import torch
 import matplotlib.pyplot as plt
-from modules.data_utils import mnistgrid_getdataset
+from modules.data_utils import *
 
 
 def mnistdigits(img_size, delta, num_samples_train): #num_samples will not be used 
@@ -37,5 +37,15 @@ def mnistdigits_grid2patch(img_size, delta, num_samples_train):
     trainset = mnistgrid_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
     valset= mnistgrid_getdataset(img_size, 'val', delta, data_dir)
     testset= mnistgrid_getdataset(img_size, 'test', delta, data_dir)
+    
+    return trainset, valset, testset
+
+
+def confocal(img_size, delta, num_samples_train):
+    data_dir= "/n/holyscratch01/wadduwage_lab/uom_Udith/datasets/confocal/63xZseriesSmall_w1/"
+    
+    trainset = confocal_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
+    valset= confocal_getdataset(img_size, 'val', delta, data_dir)
+    testset= confocal_getdataset(img_size, 'test', delta, data_dir)
     
     return trainset, valset, testset
