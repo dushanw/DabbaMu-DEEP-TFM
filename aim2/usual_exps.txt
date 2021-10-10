@@ -119,3 +119,47 @@ do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
 
 ----------------------------
 
+device = 'cuda:0'
+
+exps = {
+        'MODEL.MODEL_A.lambda_scale_factor': ['1', '4'],
+        'MODEL.MODEL_A.rotation_lambda': ['10.0', '10000.0'], #'10.0' 
+        'MODEL.MODEL_H.lr_H': ['1.0', '0.0'],
+    
+        'MODEL.MODEL_A.readnoise_std': ['0.0', '0.27', '2.0', '6.0'],  #(ORCA-qCMOS, ORCA-CMOS, 'ORCA2-DIGITAL-CCS')
+    
+        'MODEL.MODEL_A.sPSF': ['impulse(side_len=5)'],
+        'MODEL.MODEL_A.exPSF': ['impulse(side_len=5)']}
+
+general_opts= ['TRAIN.show_results_epoch', '5', #'5',
+                'TRAIN.epochs', '150', #'150',
+               
+                'MODEL.MODEL_DECODER.upsample_net', 'custom_v2',
+                'MODEL.MODEL_H.T', '8',
+                'DATASET.img_size', '256',
+                'DATASET.num_samples_train', '3000' #'3000'
+              ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+---------------------------------------
+
+
+device = 'cuda:0'
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10.0' , '10000.0'],
+        'MODEL.MODEL_A.lambda_scale_factor': ['5', '6', '7'], #'1','2','3','4', 
+        'MODEL.MODEL_H.T': ['1','2','4', '8', '16', '32'],
+        'MODEL.MODEL_H.lr_H': ['1.0', '0.0'],
+    
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000']}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150',
+                'MODEL.MODEL_DECODER.upsample_net', 'custom_v2',
+                ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
