@@ -118,7 +118,11 @@ def run(config_file=None, opts=None, save_special=False):
     ########################################################################
     
     trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
-    train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train)
+    
+    if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
+    else:drop_last_val_test= False
+        
+    train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train, drop_last_val_test= drop_last_val_test)
     
     ###
     
@@ -165,4 +169,4 @@ def run(config_file=None, opts=None, save_special=False):
 
     ###
 
-    train(decoder, decoder_upsample_net, modelA, modelH, connect_forward_inverse, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special)
+    train(decoder, decoder_upsample_net, modelA, modelH, connect_forward_inverse, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special, cfg)
