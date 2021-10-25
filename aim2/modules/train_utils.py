@@ -104,7 +104,7 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
     
     return losses, model_decoder, opt, X, X_hat, Ht, yt_down, model_H, metrics
 
-def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forward_inverse, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False):
+def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forward_inverse, criterion, opt, train_loader, test_loader, device, epochs=100, show_results_epoch=1, train_model_iter=1, train_H_iter=0, m_inc_proc= None, save_dir= None, classifier=None, rescale_for_classifier= [-1, 1], save_special_bool=False, cfg= None):
     
     T= model_H.T
     
@@ -132,6 +132,7 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
         losses_val, model_decoder, opt, X_val, X_hat_val, Ht_val, yt_down_val, model_H, metrics_val = loop(device, test_loader, model_decoder, model_decoder_upsample, model_A, model_H, criterion, opt, 'test', losses_val, epoch, m, train_model_iter, train_H_iter, metrics_val, connect_forward_inverse)
         end_val= time.time()
         
+        
         with open(f"{save_dir}/details.txt", 'a') as f:
             timing_details= f'training loop time (for epoch: {epoch}): {end_train-start_train} sec\n'
             timing_details+= f'validation loop time (for epoch: {epoch}): {end_val-start_val} sec\n\n'
@@ -151,7 +152,26 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
                 try:os.mkdir(save_special_dir)
                 except:pass
                 
-                save_special(X_val, Ht_val, X_hat_val, yt_down_val, epoch, f'{save_dir}/save_special')
+                save_special(X_val, Ht_val, X_hat_val, yt_down_val, epoch, f'{save_dir}/save_special')                
+                
+                torch.save({
+                    'cfg':cfg,
+                    'epoch': epoch,
+                    'm':m, 
+
+                    'decoder': model_decoder.state_dict(),
+                    'decoder_upsample': model_decoder_upsample.state_dict(),
+                    'model_H': model_H.state_dict(),
+                    
+                    'losses_train': losses_train,
+                    'losses_val': losses_val,
+                    'metrics_train': metrics,
+                    'metrics_val': metrics_val,
+                    
+                    'opt_decoder_state_dict': opt[0].state_dict(),
+                    'opt_Ht_state_dict': opt[1].state_dict(),
+                    }, f'{save_dir}/save_special/latest_model.pth')
+                
                 
         
             
