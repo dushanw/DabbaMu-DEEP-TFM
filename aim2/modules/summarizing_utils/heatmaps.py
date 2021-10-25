@@ -9,7 +9,7 @@ from modules.summarizing_utils.sorting_methods import heatmap_sort_function
 from modules.summarizing_utils.filter_results_utils import filter_results, get_metric
 
 from reportlab.lib.enums import TA_JUSTIFY
-from reportlab.lib.pagesizes import letter
+from reportlab.lib.pagesizes import letter, A3, A2, A1, landscape
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, PageBreak
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
@@ -246,7 +246,7 @@ def quantitative_results_HEATMAPS(img_list, plot_vars_dict, overrides_dict_list,
 def save_heatmaps2pdf(heatmap_dir, heatmap_sort_function, pdf_filename):
     heatmap_dir_list= glob.glob(f'{heatmap_dir}/*.jpg')
     heatmap_dir_list_sorted = sorted(heatmap_dir_list, key = heatmap_sort_function)
-    doc = SimpleDocTemplate(pdf_filename,pagesize=letter,
+    doc = SimpleDocTemplate(pdf_filename,pagesize=landscape(A1),
                             rightMargin=72,leftMargin=72,
                             topMargin=72,bottomMargin=18)
     Story=[]
