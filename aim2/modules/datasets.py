@@ -49,3 +49,16 @@ def confocal(img_size, delta, num_samples_train):
     testset= confocal_getdataset(img_size, 'test', delta, data_dir)
     
     return trainset, valset, testset
+
+
+def neuronal(img_size, delta, num_samples_train):  
+    
+    train_data_dir = '/n/holylfs/LABS/wadduwage_lab/Lab/navodini/_results/_cnn_synthTrData/17-Aug-2021/dmd_exp_tfm_mouse_20201224_100um/mouse_Synbv_100um_data_6sls_20mc_tr.h5'
+    test_data_dir = '/n/holylfs/LABS/wadduwage_lab/Lab/navodini/_results/_cnn_synthTrData/17-Aug-2021/dmd_exp_tfm_mouse_20201224_100um/mouse_Synbv_100um_data_6sls_20mc_test.h5'
+    
+    
+    trainset = neuronal_getdataset(img_size, 'train', delta, train_data_dir, num_samples_train)
+    valset= neuronal_getdataset(img_size, 'val', delta, test_data_dir)
+    testset= neuronal_getdataset(img_size, 'test', delta, test_data_dir)
+    
+    return trainset, valset, testset
