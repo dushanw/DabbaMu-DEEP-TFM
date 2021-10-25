@@ -163,3 +163,91 @@ general_opts= ['TRAIN.show_results_epoch', '5',
 
 do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
 
+
+-----------------------
+device = 'cuda:0'
+
+## stopped at lambda_scale_factor = 5
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10.0'], # '10000.0'
+        'MODEL.MODEL_A.lambda_scale_factor': ['5', '6', '7'],  #'1','2','3','4', 
+        'MODEL.MODEL_H.T': ['16'], #'32', '16', '8', '4', '2',
+        'MODEL.MODEL_H.lr_H': ['1.0'], # '0.0'
+    
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000']}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150',
+                'MODEL.MODEL_DECODER.upsample_net', 'custom_v2',
+                'DATASET.name', 'confocal'
+                ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+--------------------------
+device = 'cuda:1'
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10000.0'], # '10.0'
+        'MODEL.MODEL_A.lambda_scale_factor': ['1','2','3','4', '5', '6', '7'],  
+        'MODEL.MODEL_H.T': ['1'], #'32', '16', '8', '4', '2', '1'
+        'MODEL.MODEL_H.lr_H': ['1.0'], # '0.0'
+    
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000'],
+        'MODEL.MODEL_DECODER.upsample_net': ['learnable_transpose_conv']}
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150',
+                'DATASET.name', 'neuronal'
+                ]
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+-----------------------------
+device = 'cuda:1'
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10.0', '10000.0'], # '10.0'
+        'MODEL.MODEL_A.lambda_scale_factor': ['1','2','3','4', '5', '6', '7', '8'],  
+        'MODEL.MODEL_H.T': ['32', '16', '8', '4', '2', '1'],
+        'MODEL.MODEL_H.lr_H': ['1.0', '0.0'], # '0.0'
+        'DATASET.name': ['confocal', 'mnistdigits_grid2patch'], 
+        'MODEL.MODEL_H.H_init': ['randn_FourierBased', 'uniformones_FourierBased', 'hadamard_FourierBased'],
+    
+        
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000'],
+        'MODEL.MODEL_DECODER.upsample_net': ['learnable_transpose_conv']} #'custom_v2' -> check what is better !!!
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150']
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= True)
+
+----------------------------
+## FIND WHETHER THE EXTREME RESULTS OF CONFOCAL DATA IS ACHIEVABLE FROM TRANSPOSE_CONV --> 
+
+device = 'cuda:1'
+
+exps = {
+        'MODEL.MODEL_A.rotation_lambda': ['10.0'], # '10.0'
+        'MODEL.MODEL_A.lambda_scale_factor': ['7'],  
+        'MODEL.MODEL_H.T': ['32', '16', '8', '4', '2', '1'],
+        'MODEL.MODEL_H.lr_H': ['1.0'], # '0.0'
+        'DATASET.name': ['confocal'], 
+        'MODEL.MODEL_H.H_init': ['randn_FourierBased'],
+    
+        
+        'DATASET.img_size':  ['256'],
+        'DATASET.num_samples_train': ['3000'],
+        'MODEL.MODEL_DECODER.upsample_net': ['learnable_transpose_conv']} #'custom_v2' -> check what is better !!!
+
+general_opts= ['TRAIN.show_results_epoch', '5',
+                'TRAIN.epochs', '150']
+
+do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= False)
+
+
