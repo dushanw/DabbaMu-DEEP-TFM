@@ -9,3 +9,5 @@ heatmaps_mat_files.zip
 numpy_to_mat.ipynb
 
 aim2/current_exps_notebooks/example_train_*.ipynb
+aim2/current_exps_notebooks/*_[0-9]*.ipynb
+aim2/current_exps_notebooks/*/*_[0-9]*.ipynb
