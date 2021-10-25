@@ -5,6 +5,8 @@ import numpy as np
 from PIL import Image
 import glob
 import random
+import h5py
+
 
 class mnistgrid_getdataset(torch.utils.data.Dataset):
     def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
@@ -88,12 +90,45 @@ class confocal_getdataset(torch.utils.data.Dataset):
         output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
         return output
     
+
+class neuronal_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+        super(neuronal_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        f = h5py.File(img_dir, 'r')
+        img_set = f['gt']
+        print(f'total images found in: [{type_}] -- {img_dir} -> {len(img_set)}')
+        
+        if num_samples==None:num_samples=len(img_set)
+            
+        if len(img_set)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_set= img_set
+        else:
+            self.img_set= img_set[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+    def __len__(self):
+        return len(self.img_set)
     
+    def __getitem__(self, idx):
+        output = self.transform(Image.fromarray((255*self.img_set[idx, 0]).astype('uint8'))), torch.tensor(1) 
+        return output
     
-def return_dataloaders(trainset, valset, testset, batch_size_train= 32):
+def return_dataloaders(trainset, valset, testset, batch_size_train= 32, drop_last_val_test= False):
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=25, shuffle=False, drop_last= False) # batch_sizes fixed
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=25, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=25, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
 
     plt.figure()
     x, y= next(iter(val_loader))
