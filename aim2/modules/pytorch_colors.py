@@ -1,3 +1,10 @@
+"""
+Scripts are obtained from:
+
+https://github.com/jorge-pessoa/pytorch-colors.git
+
+"""
+
 import torch
 import torch.cuda
 from torch.autograd import Variable
