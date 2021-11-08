@@ -26,7 +26,7 @@ from modules.m_inc_procs import *
 from modules.models.lambdat_yt_skips import *
 
 
-def run(config_file=None, opts=None, save_special=False):
+def run(config_file=None, opts=None, save_special=False, save_dir_special= None):
     cfg = get_cfg_defaults()
     
     if config_file!=None:
@@ -112,9 +112,10 @@ def run(config_file=None, opts=None, save_special=False):
     with open(f"{save_dir}/details.txt", 'w') as f:
         f.write("details\n")
         
+        
     with open(f'{save_dir}/configs.yaml', 'w') as f:
         with redirect_stdout(f): print(cfg.dump())
-
+       
     ########################################################################
     
     trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
@@ -169,4 +170,13 @@ def run(config_file=None, opts=None, save_special=False):
 
     ###
 
-    train(decoder, decoder_upsample_net, modelA, modelH, connect_forward_inverse, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special, cfg)
+    if save_dir_special!= None:
+        try:shutil.rmtree(save_dir_special)
+        except:pass
+    
+        os.mkdir(save_dir_special)
+        with open(f'{save_dir_special}/configs.yaml', 'w') as f:
+            with redirect_stdout(f): print(cfg.dump())
+        
+        
+    train(decoder, decoder_upsample_net, modelA, modelH, connect_forward_inverse, criterion, [opt_decoder, opt_H], train_loader, val_loader, device, epochs, show_results_epoch, train_model_iter, train_H_iter, m_inc_proc, save_dir, classifier, rescale_for_classifier, save_special, cfg, save_dir_special)
