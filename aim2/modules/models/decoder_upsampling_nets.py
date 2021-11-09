@@ -117,7 +117,7 @@ class custom_v2(nn.Module):
             
         yt_upsample = yt_upsample.view(self.yt_img_size, self.yt_img_size, batch_size, self.upscale_factor, self.upscale_factor).permute(2, 0, 3, 1, 4) # shape: (batch_size, yt_img_size, upscale_factor, yt_img_size, upscale_factor)
         yt_upsample= yt_upsample.reshape(batch_size, self.recon_img_size, self.recon_img_size).unsqueeze(dim= 1) # shape: (batch_size, 1, yt_img_size*upscale_factor, yt_img_size*upscale_factor)
-        output= self.seq_block(yt_upsample) # shape: (batch_size, T, recon_img_size, recon_img_size)                    
+        output= self.seq_block(yt_upsample) # shape: (batch_size, T, recon_img_size, recon_img_size)    
         return output
                 
     def reshape_special(self, a):  # not used. Kept to use if needed
@@ -194,5 +194,3 @@ class custom_v4(nn.Module):
         output = (A_transpose @ yt.flatten(start_dim= 2).unsqueeze(dim=3)).reshape(-1, self.T, self.recon_img_size, self.recon_img_size)
 
         return output # (batch_size, T, recon_img_size, )
-
-    
