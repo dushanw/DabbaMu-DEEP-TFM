@@ -258,9 +258,69 @@ def show_imgs_segmentation(X, Ht, X_hat, yt, losses_train, losses_val, metrics_v
     
     if save_dir!=None:
         concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_val[-1], 7), metric_mse, metric_ssim)
+
+def show_imgs_classification(Ht, yt, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None, m=1): 
+    metric_acc = np.round(metrics_val['acc'][-1], 7)    
+    metric_ce = np.round(metrics_val['ce'][-1], 7)
+        
+    if T>5:T=5
+    if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'NA', 'NA'
+    if save_dir!=None:
+        if not os.path.isdir(save_dir):
+            os.mkdir(save_dir)
+            
+    idx=1 #np.random.randint(0, len(X))
+    
+    plt.figure(figsize= (2*T, 2))
+    for t in range(T):
+        plt.subplot(1,T, t+1)
+        plt.imshow(Ht[0, t].detach().cpu().numpy(), cmap='gray', vmin=0, vmax=1)
+    plt.suptitle('Ht')
+    if save_dir!=None:
+        plt.savefig(f'{save_dir}/{epoch}_Ht_acc({metric_acc})@ce({metric_ce}).jpg')
+        plt.close()
+    else:plt.show()
+    
+    plt.figure(figsize= (2*T, 2))
+    for t in range(T):
+        plt.subplot(1,T, t+1)
+        plt.imshow(Ht[0, t].detach().cpu().numpy()> 0.5, cmap='gray', vmin=0, vmax=1)
+    plt.suptitle('Ht > 0.5')
+    if save_dir!=None:
+        plt.savefig(f'{save_dir}/{epoch}_Htcomp_acc({metric_acc})@ce({metric_ce}).jpg')
+        plt.close()
+    else:plt.show()
+    
+    plt.figure(figsize= (2*T, 2))
+    for t in range(T):
+        plt.subplot(1,T, t+1)
+        plt.imshow(yt[idx, t].detach().cpu().numpy())
+    plt.suptitle('yt')
+    if save_dir!=None:
+        plt.savefig(f'{save_dir}/{epoch}_yt_acc({metric_acc})@ce({metric_ce}).jpg')
+        plt.close()
+    else:plt.show()
+    
+    
+    plt.figure()
+    plt.plot(losses_train, label= 'train loss')
+    plt.plot(losses_val, label= 'val loss')
+    plt.legend()
+    plt.title(f'losses after {epoch} epochs ...: final loss: {losses_val[-1]}')
+    if save_dir!=None:
+        plt.savefig(f'{save_dir}/{epoch}_losses_acc({metric_acc})@ce({metric_ce}).jpg')
+        plt.close()
+    else:plt.show()        
+        
         
 def save_special(X_val, Ht_val, X_hat_val, yt_val, epoch, save_dir):
     np.save(f'{save_dir}/{epoch}_X_val.npy', X_val.detach().cpu().numpy())
     np.save(f'{save_dir}/{epoch}_Ht_val.npy', Ht_val.detach().cpu().numpy())
     np.save(f'{save_dir}/{epoch}_X_hat_val.npy', X_hat_val.detach().cpu().numpy())
+    np.save(f'{save_dir}/{epoch}_yt_val.npy', yt_val.detach().cpu().numpy())
+    
+
+        
+def save_special_classification(Ht_val, yt_val, epoch, save_dir):
+    np.save(f'{save_dir}/{epoch}_Ht_val.npy', Ht_val.detach().cpu().numpy())
     np.save(f'{save_dir}/{epoch}_yt_val.npy', yt_val.detach().cpu().numpy())

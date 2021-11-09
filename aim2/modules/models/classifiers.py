@@ -1,7 +1,7 @@
 from torch import nn
 import torch
 
-def classification_accuracy(labels, outputs):
+def classification_accuracy(outputs, labels):
     return (torch.argmax(outputs, axis=1) == labels).float().mean().detach().cpu().numpy()
 
 class simple_mnist_classifier(nn.Module):
