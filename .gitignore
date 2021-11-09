@@ -1,5 +1,8 @@
 figs
 aim2/figs_cvpr/
+aim2/figs_cvpr_classification/
+aim2/figs_cvpr_segmentation/
+
 saved_models
 datasets
 .ipynb_checkpoints
@@ -12,3 +15,4 @@ numpy_to_mat.ipynb
 aim2/current_exps_notebooks/example_train_*.ipynb
 aim2/current_exps_notebooks/*_[0-9]*.ipynb
 aim2/current_exps_notebooks/*/*_[0-9]*.ipynb
+
