@@ -60,7 +60,7 @@ def find_best_result(img_dir, metric_name='SSIM', metric_type= 'score'): #metric
         metric = metric_dict[metric_name]
         
         img= plt.imread(img_dir)
-        is_results_okay= img[100, 300].sum()< 765
+        is_results_okay= 1 #img[100, 300].sum()< 765
         
 
         if is_results_okay and metric!='nan':
