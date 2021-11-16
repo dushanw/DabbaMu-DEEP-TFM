@@ -9,6 +9,7 @@ from defaults import get_cfg_defaults
 from modules.models.preprocess_H_weights import * #ifft_2d_with_fftshift_real
 from modules.custom_activations import sigmoid_custom
 from modules.kernels import *
+from modules.psfs import *
 
 from modules.datasets import *
 from modules.data_utils import return_dataloaders
