@@ -49,7 +49,7 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
     ax1_labels = dict_[interested_key1]
     ax2_labels = dict_[interested_key2]
     
-    metric_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype='float')
+    metric_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype=object)
     epoch_map = np.ones((len(ax1_labels),len(ax2_labels)), dtype='int')
     
     def imgdir2metric(img_name):return get_metric(img_name)[metric_name]
@@ -63,35 +63,59 @@ def create_metric_map(img_list, dict_, metric_name='SSIM', interested_key1= 'T',
             for img_dir in interested_imgs:
                 if f'{interested_key1}({ax1_vals})' in img_dir and f'{interested_key2}({ax2_vals})' in img_dir:valid_img_dirs.append(img_dir)
 
-            assert len(valid_img_dirs)==1, f"Multiple directories found for same attr combination (multiple values for one entry of heatmap). Check and add entry to 'override_dict'/ No directories found at all !!! -> dirs :: {valid_img_dirs}"
+            assert len(valid_img_dirs)<=1, f"Multiple directories found for same attr combination (multiple values for one entry of heatmap). Check and add entry to 'override_dict'/ No directories found at all !!! -> dirs :: {valid_img_dirs}"
+            if len(valid_img_dirs) == 0:
+                valid_img_dirs = ['exp is not done']
 
-            sorted_valid_img_dirs= sorted(valid_img_dirs, key= imgdir2metric)            
-            selected_img_dir = sorted_valid_img_dirs[0]
+            #sorted_valid_img_dirs= sorted(valid_img_dirs, key= imgdir2metric)            
+            selected_img_dir = valid_img_dirs[0]
 
-            metric_dict = get_metric(selected_img_dir)
-            metric_map[i, j]= metric_dict[metric_name]
+            if selected_img_dir != 'exp is not done':
+                metric_dict = get_metric(selected_img_dir)
+                metric_map[i, j]= metric_dict[metric_name]
+                epoch= int(selected_img_dir.split('/')[-1].split('_')[0])
+                epoch_map[i, j]= epoch
+            else:
+                metric_map[i, j] = "NA"       
+                epoch_map[i, j]= 0
             
-            epoch= int(selected_img_dir.split('/')[-1].split('_')[0])
-            epoch_map[i, j]= epoch
+            
             
             
     if plot_label_dict!= None: ### Use given axis labels
         ax1_labels = plot_label_dict[interested_key1]
         ax2_labels = plot_label_dict[interested_key2]
     
+    
+    metric_map_noNA= metric_map[np.where(metric_map!= 'NA')]
+    if len(metric_map_noNA)==0:
+        metric_map_noNA= np.array([0.0])
+        
+    if metric_name in ['SSIM', 'SSIM11', 'SSIM5']:
+        metric_map[np.where(metric_map== 'NA')] = (metric_map_noNA).astype('float').min()
+    elif metric_name in ['L1Loss', 'MSE', 'last_converged']:
+        metric_map[np.where(metric_map== 'NA')] = (metric_map_noNA).astype('float').max()
+    else:
+        raise NotImplementedError(f"NA handling is not implemented on -> mode : {mode}")
+        
+    metric_map= metric_map.astype('float')
     return metric_map, epoch_map, ax1_labels, ax2_labels
 
 def combine_heatmap_with_epochs(metric_heatmap, epoch_matrix, epoch2m_func=None):
     assert metric_heatmap.shape== epoch_matrix.shape, 'Metric heatmap and epoch matrix have different shapes !!!'
+    
     metric_heatmap= np.round(metric_heatmap, 5) 
     
     h, w= metric_heatmap.shape
     output_map= np.zeros_like(metric_heatmap).astype('str')
     for i in range(h):
         for j in range(w):
-            m = epoch2m_func(epoch_matrix[i, j])
+            #m = epoch2m_func(epoch_matrix[i, j])
             #entry= f'{metric_heatmap[i, j]} (m:{m})'
-            entry= f'{metric_heatmap[i, j]}/{epoch_matrix[i, j]}'
+            if epoch_matrix[i, j] == 0:
+                entry= 'NA'
+            else:
+                entry= f'{metric_heatmap[i, j]}/{epoch_matrix[i, j]}'
             output_map[i, j]= entry
     return output_map
 
@@ -147,8 +171,8 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epoc
             try:os.mkdir(save_dir)
             except:pass
 
-            np.save(f'{save_dir}/{metric_name}@@{overrides}@@highlrH.npy', metric_map_highlrH)
-            np.save(f'{save_dir}/{metric_name}@@{overrides}@@lowlrH.npy', metric_map_lowlrH)
+            np.save(f'{save_dir}/{metric_name}@@{overrides}@@highlrH.npy', [metric_map_highlrH, epochs_map_highlrH])
+            np.save(f'{save_dir}/{metric_name}@@{overrides}@@lowlrH.npy', [metric_map_lowlrH, epochs_map_lowlrH])
 
             plt.savefig(f'{save_dir}/{metric_name}@@{overrides}.jpg', bbox_inches='tight')
         plt.show()
@@ -182,7 +206,7 @@ def plot_heatmap(metric_map_highlrH, metric_map_lowlrH, epochs_map_highlrH, epoc
             try:os.mkdir(save_dir)
             except:pass
 
-            np.save(f'{save_dir}/{metric_name}@@{overrides}.npy', metric_map_highlrH)
+            np.save(f'{save_dir}/{metric_name}@@{overrides}.npy', [metric_map_highlrH, epochs_map_highlrH])
 
             plt.savefig(f'{save_dir}/{metric_name}@@{overrides}.jpg', bbox_inches='tight')
         plt.show()
