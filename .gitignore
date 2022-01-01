@@ -1,19 +1,12 @@
 figs
-aim2/figs_cvpr/
-aim2/figs_cvpr_classification/
-aim2/figs_cvpr_segmentation/
+aim2/support_notebooks
+aim2/_SUBMISSIONS
 
 saved_models
 datasets
 .ipynb_checkpoints
 __pycache__
-figures_to_poster
 errors.txt
-heatmaps_mat_files.zip
-numpy_to_mat.ipynb
 
-aim2/current_exps_notebooks/example_train_*.ipynb
 aim2/current_exps_notebooks/*_[0-9]*.ipynb
 aim2/current_exps_notebooks/*/*_[0-9]*.ipynb
-
-aim2/current_exps_notebooks/None/
