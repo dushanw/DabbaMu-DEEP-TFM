@@ -174,6 +174,48 @@ class neuronal_getdataset(torch.utils.data.Dataset):
         output = self.transform(Image.fromarray((255*self.img_set[idx, 0]).astype('uint8'))), torch.tensor(1) 
         return output
     
+class vascular_v1_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+        super(vascular_v1_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.png"))
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        if self.type_ == 'train':
+            self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.RandomResizedCrop(size= img_size, scale=(0.5, 1.0), ratio=(0.75, 1.33)),
+                                    torchvision.transforms.RandomHorizontalFlip(),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        else:
+            self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+    
+    def __len__(self):
+        return len(self.img_list)
+    
+    def __getitem__(self, idx):
+        output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
+        return output
+    
 def return_dataloaders(trainset, valset, testset, batch_size_train= 32, drop_last_val_test= False):
     train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
     val_loader = torch.utils.data.DataLoader(valset, batch_size=25, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed

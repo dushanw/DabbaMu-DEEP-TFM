@@ -73,3 +73,15 @@ def neuronal(img_size, delta, num_samples_train):
     testset= neuronal_getdataset(img_size, 'test', delta, test_data_dir)
     
     return trainset, valset, testset
+
+
+def vascular_v1(img_size, delta, num_samples_train): ## murats dataset
+    data_dir= "/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/vascular"
+    
+    trainset = vascular_v1_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
+    valset= vascular_v1_getdataset(img_size, 'val', delta, data_dir)
+    testset= vascular_v1_getdataset(img_size, 'test', delta, data_dir)
+    
+    return trainset, valset, testset
+
+
