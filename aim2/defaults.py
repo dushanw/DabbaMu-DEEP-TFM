@@ -47,7 +47,7 @@ _C.MODEL.MODEL_A.readnoise_std=0.0
 
 _C.MODEL.MODEL_DECODER = CN()
 _C.MODEL.MODEL_DECODER.name= 'genv1'
-_C.MODEL.MODEL_DECODER.upsample_net= 'bicubic_interp' ## define in modules.models.decoder_upsampling_nets
+_C.MODEL.MODEL_DECODER.upsample_net= 'custom_v2' ## define in modules.models.decoder_upsampling_nets
 _C.MODEL.MODEL_DECODER.custom_upsampling_bias= True
 _C.MODEL.MODEL_DECODER.upsample_net_init_method= 'xavier_normal' ## current best performed initialization
 _C.MODEL.MODEL_DECODER.channel_list=[24, 12, 8, 4, 2]
