@@ -12,7 +12,7 @@ import torch
 from modules.eval_metrics import ssim_ignite, mse_distance
 from modules.tasks import segment
 
-def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None, metric_mse=None, metric_ssim=None):
+def concat_imgs(save_dir, epoch, class_acc_on_fake=None, loss=None, metric_l1= None, metric_mse=None, metric_ssim=None):
     im_long = plt.imread(f'{save_dir}/{epoch}_line6_results_grids.jpg')
     imgs=[]
     max_width=0
@@ -47,14 +47,14 @@ def concat_imgs(save_dir, epoch, class_acc_on_fake=None, L1loss=None, metric_mse
     
 
     if class_acc_on_fake=='NA':
-        save_img_dir= f'{save_dir}/{epoch}_L1Loss({L1loss})_MSE({metric_mse})'
+        save_img_dir= f'{save_dir}/{epoch}_loss({loss})_L1({metric_l1})_MSE({metric_mse})'
         for key, val in metric_ssim.items():
             save_img_dir += f'_SSIM{key}({val})'
         save_img_dir += '.jpg'
     else:
         rounded= np.round(float(class_acc_on_fake), 3)
         ssim11= metric_ssim['11']
-        save_img_dir= f'{save_dir}/{epoch}_AccOnFake({rounded})_L1Loss({L1loss})_MSE({metric_mse})_SSIM({ssim11}).jpg'
+        save_img_dir= f'{save_dir}/{epoch}_AccOnFake({rounded})_loss({loss})_L1({metric_l1})_MSE({metric_mse})_SSIM({ssim11}).jpg'
     plt.imsave(save_img_dir, final_img)
 
     for img in glob.glob(f'{save_dir}/{epoch}_line*'):
@@ -78,6 +78,7 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
     metric_ssim= {'11':metric_ssim11, '5':metric_ssim5}
     
     metric_mse = np.round(metrics_val['mse'][-1], 7)
+    metric_l1 = np.round(metrics_val['l1'][-1], 7)
         
     if T>5:T=5
     if class_acc_on_fake==None or class_acc_on_real==None:class_acc_on_fake, class_acc_on_real = 'NA', 'NA'
@@ -86,13 +87,17 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
             os.mkdir(save_dir)
             
     idx=1 #np.random.randint(0, len(X))
-    plt.figure(figsize= (6, 3))
+    plt.figure(figsize= (8, 3))
     plt.subplot(1,2,1)
-    plt.imshow(X[idx,0].detach().cpu().numpy())
+    vmin= X[idx,0].min()
+    vmax= X[idx,0].max()
+    plt.imshow(X[idx,0].detach().cpu().numpy(), vmin= vmin, vmax= vmax)
     plt.title('real')
+    plt.colorbar()
     plt.subplot(1,2,2)
-    plt.imshow(X_hat[idx,0].detach().cpu().numpy())
+    plt.imshow(X_hat[idx,0].detach().cpu().numpy(), vmin= vmin, vmax= vmax)
     plt.title('generated')
+    plt.colorbar()
     plt.suptitle(f'm : {m}')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line1_real_gen.jpg')
@@ -143,11 +148,10 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
     plt.figure(figsize=(15,3)) #(length, height)
     plt.subplot(1,2,1)
     plt.imshow(img_grid_real)
-    #plt.title(f'L1Loss : {np.round(losses_val[-1], 3)} | MSE : {metric_mse} | SSIM | {metric_ssim}')
     plt.subplot(1,2,2)
     plt.imshow(img_grid_fake)
     ssim11= metric_ssim['11']
-    plt.title(f'L1Loss : {np.round(losses_val[-1], 5)} | MSE : {np.round(metric_mse, 5)} | SSIM(k=11) | {np.round(ssim11, 5)}')
+    plt.title(f'Loss : {np.round(losses_val[-1], 5)} | L1 : {np.round(metric_l1, 5)} | MSE : {np.round(metric_mse, 5)} | SSIM(k=11) | {np.round(ssim11, 5)}')
     plt.suptitle(f'results after {epoch} epochs ... ')
     if save_dir!=None:
         plt.savefig(f'{save_dir}/{epoch}_line6_results_grids.jpg')
@@ -155,7 +159,7 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
     else:plt.show()
     
     if save_dir!=None:
-        concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_val[-1], 7), metric_mse, metric_ssim)
+        concat_imgs(save_dir, epoch, class_acc_on_fake, np.round(losses_val[-1], 7), metric_l1, metric_mse, metric_ssim)
         
         
 def show_imgs_segmentation(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real=None, class_acc_on_fake=None, save_dir=None, m=1):
@@ -245,10 +249,10 @@ def show_imgs_segmentation(X, Ht, X_hat, yt, losses_train, losses_val, metrics_v
     plt.figure(figsize=(15,3)) #(length, height)
     plt.subplot(1,2,1)
     plt.imshow(img_grid_real)
-    #plt.title(f'L1Loss : {np.round(losses_val[-1], 3)} | MSE : {metric_mse} | SSIM | {metric_ssim}')
     plt.subplot(1,2,2)
     plt.imshow(img_grid_fake)
     ssim11= metric_ssim['11']
+    raise NotImplementedError("UDITH: CODE SHOULD BE REFINED TO HAVE DIFFERENT LOSS FUNCTIONS !!!")
     plt.title(f'L1Loss : {np.round(losses_val[-1], 5)} | MSE : {np.round(metric_mse, 5)} | SSIM(k=11) | {np.round(ssim11, 5)}')
     plt.suptitle(f'results after {epoch} epochs ... ')
     if save_dir!=None:
