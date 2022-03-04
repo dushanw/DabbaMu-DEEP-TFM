@@ -10,6 +10,7 @@ from modules.models.preprocess_H_weights import * #ifft_2d_with_fftshift_real
 from modules.custom_activations import sigmoid_custom
 from modules.kernels import *
 from modules.psfs import *
+from modules.losses import *
 
 from modules.datasets import *
 from modules.data_utils import return_dataloaders
@@ -121,7 +122,8 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     
     trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
     
-    if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
+    if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW2' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW4':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
+    
     else:drop_last_val_test= False
         
     train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train, drop_last_val_test= drop_last_val_test)
