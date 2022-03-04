@@ -216,11 +216,99 @@ class vascular_v1_getdataset(torch.utils.data.Dataset):
         output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
         return output
     
-def return_dataloaders(trainset, valset, testset, batch_size_train= 32, drop_last_val_test= False):
-    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
-    val_loader = torch.utils.data.DataLoader(valset, batch_size=25, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
-    test_loader = torch.utils.data.DataLoader(testset, batch_size=25, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
+    
 
+class bbbcHumanMCF7cellsW2_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+        super(bbbcHumanMCF7cellsW2_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.png"))
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        np.random.seed(10)
+        np.random.shuffle(img_list)
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        
+    def __len__(self):
+        return len(self.img_list)
+    
+    def __getitem__(self, idx):
+        # clip from 0.5 and do min-max norm
+        output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
+        return output
+    
+
+class bbbcHumanMCF7cellsW4_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+        super(bbbcHumanMCF7cellsW4_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.png"))
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        np.random.seed(10)
+        np.random.shuffle(img_list)
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        self.transform = torchvision.transforms.Compose([
+                                    torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        
+    def __len__(self):
+        return len(self.img_list)
+    
+    def __getitem__(self, idx):
+        # clip from 0.5 and do min-max norm
+        output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
+        return output
+    
+    
+    
+    
+    
+    
+    
+    
+    
+def return_dataloaders(trainset, valset, testset, batch_size_train= 32, drop_last_val_test= False, batch_size_valtest= 25):
+    train_loader = torch.utils.data.DataLoader(trainset, batch_size=batch_size_train, shuffle=True, drop_last= True)
+    val_loader = torch.utils.data.DataLoader(valset, batch_size=batch_size_valtest, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
+    test_loader = torch.utils.data.DataLoader(testset, batch_size=batch_size_valtest, shuffle=False, drop_last= drop_last_val_test) # batch_sizes fixed
+
+    print(f'dataset lenths : {len(trainset)} | {len(valset)} | {len(testset)}')
     plt.figure()
     x, y= next(iter(val_loader))
     plt.imshow(x[0,0])
@@ -232,3 +320,5 @@ def return_dataloaders(trainset, valset, testset, batch_size_train= 32, drop_las
     print('dataset value range : ',vmin, vmax)
     
     return train_loader, val_loader, test_loader
+
+
