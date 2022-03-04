@@ -5,7 +5,7 @@ import numpy as np
 import time
 
 
-from modules.eval_metrics import ssim_ignite, mse_distance
+from modules.eval_metrics import ssim_ignite, mse_distance, l1_distance
 from modules.models.classifiers import classification_accuracy as accuracy
 
 def evaluate(device, loader, model_decoder, model_A, model_H, classifier, rescale=[-1, 1]):
@@ -39,6 +39,7 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
     metric_ssim11_temp = []
     metric_ssim5_temp = []
     metric_mse_temp = []
+    metric_l1_temp = []
     
     opt_model, opt_H = opt
     for i, (x, y) in enumerate(loader):
@@ -93,6 +94,7 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
         metric_ssim11_temp.append(ssim_ignite(X_hat, X, k=11))
         metric_ssim5_temp.append(ssim_ignite(X_hat, X, k=5))
         metric_mse_temp.append(mse_distance(X_hat, X))
+        metric_l1_temp.append(l1_distance(X_hat, X))
         
     
     print(f'after {epoch} epochs... yt_down range ({type_}): [{yt_down.min()} {yt_down.max()}]')
@@ -101,6 +103,7 @@ def loop(device, loader, model_decoder, model_decoder_upsample, model_A, model_H
     metrics['ssim11'].append(np.mean(metric_ssim11_temp))
     metrics['ssim5'].append(np.mean(metric_ssim5_temp))
     metrics['mse'].append(np.mean(metric_mse_temp))
+    metrics['l1'].append(np.mean(metric_l1_temp))
     
     return losses, model_decoder, opt, X, X_hat, Ht, yt_down, model_H, metrics
 
@@ -115,8 +118,8 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
     losses_train= []
     losses_val= []
     
-    metrics = {'mse':[], 'ssim5':[], 'ssim11':[]}
-    metrics_val = {'mse':[], 'ssim5':[], 'ssim11':[]}
+    metrics = {'l1':[], 'mse':[], 'ssim5':[], 'ssim11':[]}
+    metrics_val = {'l1':[], 'mse':[], 'ssim5':[], 'ssim11':[]}
     print(f'device : {device}')
 
     m=1
