@@ -10,6 +10,9 @@ import modules.pytorch_colors as colors
 def mse_distance(X_hat, X):
     return F.mse_loss(X_hat, X).item()
 
+def l1_distance(X_hat, X):
+    return F.l1_loss(X_hat, X).item()
+
 
 def ssim_custom_lib(X_hat, X):
     data_range= 1.0
