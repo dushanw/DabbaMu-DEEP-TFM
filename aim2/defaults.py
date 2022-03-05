@@ -7,6 +7,7 @@ _C.GENERAL = CN()
 _C.GENERAL.torch_seed= 10
 _C.GENERAL.device = 'cuda:0'
 _C.GENERAL.save_dir = 'figs/test'
+_C.GENERAL.other_opt_dir= None
 
 _C.DATASET = CN()
 _C.DATASET.name= 'mnistdigits_grid2patch'

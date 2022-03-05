@@ -15,7 +15,7 @@ from modules.losses import *
 from modules.datasets import *
 from modules.data_utils import return_dataloaders
 
-from modules.train_utils.reconstruction_swinIRwCustomUp import train
+from modules.train_utils.reconstruction_swinIR_wforward import train
 
 from modules.models.forward_model import modelA_class
 from modules.models.forward_H import modelH_class
@@ -27,7 +27,7 @@ from modules.m_inc_procs import *
 
 from modules.models.lambdat_yt_skips import *
 
-from adversarial_learning.swinIRwCustomUp_support_files.models_define import swinIR_generative_decoder
+from adversarial_learning.swinIRwforward_support_files.models_define import swinIR_generative_decoder
 
 def run(config_file=None, opts=None, save_special=False, save_dir_special= None):
     cfg = get_cfg_defaults()
@@ -123,6 +123,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     ########################################################################
     
     trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train, num_samples_valtest= num_samples_valtest)
+
     
     if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW2' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW4':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
     
@@ -149,10 +150,19 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
         project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
     else:
         project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
-    decoder= swinIR_generative_decoder(f'{project_dir}/adversarial_learning/swinIRwCustomUp_support_files/opt.yaml', cfg)
+
+    if cfg.GENERAL.other_opt_dir !=None:
+        other_opt_dir= cfg.GENERAL.other_opt_dir
+        print(f'** other opt dir is used from configs : {cfg.GENERAL.other_opt_dir}')
+    else:
+        other_opt_dir= 'adversarial_learning/swinIRwforward_support_files/opt.yaml'
+        print(f'** default other opt dir is used : {cfg.GENERAL.other_opt_dir}')
+
+
+    decoder= swinIR_generative_decoder(f'{project_dir}/{other_opt_dir}', cfg, modelA, modelH)
     decoder.init_train()
 
-    opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)
+    opt_H= None
     opt_decoder= None #defined inside the SwinIR decoder model
 
 

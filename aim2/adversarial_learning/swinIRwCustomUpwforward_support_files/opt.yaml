@@ -1,0 +1,155 @@
+
+datasets: 
+    test:
+        H_size: 128
+        dataroot_H: testsets/Set5/HR
+        dataroot_L: null
+        dataset_type: blindsr
+        degradation_type: bsrgan
+        lq_patchsize: 64
+        n_channels: 1
+        name: test_dataset
+        phase: test
+        scale: 4
+        shuffle_prob: 0.1
+        use_sharp: false
+    train:
+        H_size: 128
+        dataloader_batch_size: 32
+        dataloader_num_workers: 16
+        dataloader_shuffle: true
+        dataroot_H: trainsets/trainH
+        dataroot_L: null
+        dataset_type: blindsr
+        degradation_type: bsrgan
+        lq_patchsize: 32
+        n_channels: 1
+        name: train_dataset
+        phase: train
+        scale: 4
+        shuffle_prob: 0.1
+        use_sharp: true
+dist: false
+find_unused_parameters: true
+gpu_ids:
+- 0
+- 1
+- 2
+- 3
+- 4
+- 5
+- 6
+- 7
+is_train: true
+merge_bn: false
+merge_bn_startpoint: -1
+model: gan
+n_channels: 1
+netD: 
+    base_nc: 64
+    in_nc: 1
+    init_bn_type: uniform
+    init_gain: 0.2
+    init_type: orthogonal
+    n_layers: 3
+    net_type: discriminator_unet
+    norm_type: spectral
+netG: 
+    depths:
+    - 6
+    - 6
+    - 6
+    - 6
+    - 6
+    - 6
+    embed_dim: 180
+    img_range: 1.0
+    img_size: 128
+    in_chans: 1
+    init_type: default
+    mlp_ratio: 2
+    net_type: swinir
+    num_heads:
+    - 6
+    - 6
+    - 6
+    - 6
+    - 6
+    - 6
+    resi_connection: 1conv
+    scale: 1
+    upsampler: no_upsampling
+    upscale: 1
+    window_size: 8
+num_gpu: 8
+opt_path: options/swinir/train_swinir_sr_realworld_x4_gan.json
+path: 
+    images: superresolution/swinir_sr_realworld_x4_gan/images
+    log: superresolution/swinir_sr_realworld_x4_gan
+    models: superresolution/swinir_sr_realworld_x4_gan/models
+    options: superresolution/swinir_sr_realworld_x4_gan/options
+    pretrained_netD: null
+    pretrained_netE: null
+    pretrained_netG: null
+    pretrained_optimizerG: null
+    pretrained_optimizerD: null
+    root: superresolution
+    task: superresolution/swinir_sr_realworld_x4_gan
+rank: 0
+scale: 1
+task: swinir_sr_realworld_x4_gan
+train:
+    D_init_iters: 0
+    D_lossfn_weight: 0.1
+    D_optimizer_lr: 0.0001
+    D_optimizer_reuse: false
+    D_optimizer_type: adam
+    D_optimizer_wd: 0
+    D_param_strict: true
+    D_scheduler_gamma: 0.5
+    D_scheduler_milestones:
+    - 400000
+    - 500000
+    - 550000
+    - 575000
+    - 600000
+    D_scheduler_type: MultiStepLR
+    D_update_ratio: 1
+    E_decay: 0.999
+    E_param_strict: true
+    F_feature_layer:
+    - 2
+    - 7
+    - 16
+    - 25
+    - 34
+    F_lossfn_type: l1
+    F_lossfn_weight: 1
+    F_use_input_norm: true
+    F_use_range_norm: false
+    F_weights:
+    - 0.1
+    - 0.1
+    - 1.0
+    - 1.0
+    - 1.0
+    G_lossfn_type: l1
+    G_lossfn_weight: 1
+    G_optimizer_lr: 0.0001
+    G_optimizer_reuse: true
+    G_optimizer_type: adam
+    G_optimizer_wd: 0
+    G_param_strict: true
+    G_scheduler_gamma: 0.5
+    G_scheduler_milestones:
+    - 400000
+    - 500000
+    - 550000
+    - 575000
+    - 600000
+    G_scheduler_type: MultiStepLR
+    checkpoint_print: 200
+    checkpoint_save: 5000
+    checkpoint_test: 5000
+    gan_type: gan
+world_size: 1
