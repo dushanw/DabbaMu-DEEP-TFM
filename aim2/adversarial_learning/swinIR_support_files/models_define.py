@@ -116,13 +116,13 @@ def init_weights(net, init_type='xavier_uniform', init_bn_type='uniform', gain=1
 ########################### FINAL MODEL
 
 class swinIR_generative_decoder(nn.Module):
-    def __init__(self, opt_file_path= 'swinIR_support_files/opt.yaml'):
+    def __init__(self, opt_file_path= 'swinIR_support_files/opt.yaml', prev_cfg= None):
         super(swinIR_generative_decoder, self).__init__()
 
         with open(opt_file_path, 'r') as file:
             opt = yaml.load(file)
         self.opt = opt                         # opt
-        self.device = torch.device('cuda' if opt['gpu_ids'] is not None else 'cpu')
+        self.device = prev_cfg.GENERAL.device #torch.device('cuda' if opt['gpu_ids'] is not None else 'cpu')
         self.is_train = opt['is_train']        # training or not
         self.schedulers = []                   # schedulers
 

@@ -143,7 +143,11 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
                          readnoise_std= readnoise_std)
     
     decoder_upsample_net= None
-    decoder= generative_decoder(cfg, '/n/home06/udithhaputhanthri/project_udith/aim2/adversarial_learning/adversarial_support_files/opt_Customv2UpGenv1Decoder.yaml')
+    if os.path.isdir('/n/home06/udithhaputhanthri/project_udith/aim2'):
+        project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
+    else:
+        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
+    decoder= generative_decoder(cfg, f'{project_dir}/adversarial_learning/adversarial_support_files/opt_Customv2UpGenv1Decoder.yaml')
     decoder.init_train()
 
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)

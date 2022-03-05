@@ -145,7 +145,11 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
                          readnoise_std= readnoise_std)
     
     decoder_upsample_net= None
-    decoder= swinIR_generative_decoder('/n/home06/udithhaputhanthri/project_udith/aim2/adversarial_learning/swinIRwCustomUp_support_files/opt.yaml', cfg)
+    if os.path.isdir('/n/home06/udithhaputhanthri/project_udith/aim2'):
+        project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
+    else:
+        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
+    decoder= swinIR_generative_decoder(f'{project_dir}/adversarial_learning/swinIRwCustomUp_support_files/opt.yaml', cfg)
     decoder.init_train()
 
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)

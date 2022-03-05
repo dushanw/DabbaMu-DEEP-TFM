@@ -53,6 +53,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     get_dataset_func= eval(cfg.DATASET.name)
     img_size= cfg.DATASET.img_size
     num_samples_train= cfg.DATASET.num_samples_train
+    num_samples_valtest= cfg.DATASET.num_samples_valtest
     delta=cfg.DATASET.delta
     batch_size_train= cfg.DATASET.batch_size_train
     img_channels= cfg.DATASET.img_channels
@@ -121,7 +122,8 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
        
     ########################################################################
     
-    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
+    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train, num_samples_valtest= num_samples_valtest)
+
     
     if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW2' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW4':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
     
@@ -144,7 +146,11 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
                          readnoise_std= readnoise_std)
     
     decoder_upsample_net= None
-    decoder= swinIR_generative_decoder('/n/home06/udithhaputhanthri/project_udith/aim2/adversarial_learning/swinIR_support_files/opt.yaml')
+    if os.path.isdir('/n/home06/udithhaputhanthri/project_udith/aim2'):
+        project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
+    else:
+        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
+    decoder= swinIR_generative_decoder(f'{project_dir}/adversarial_learning/swinIR_support_files/opt.yaml', cfg)
     decoder.init_train()
 
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)
