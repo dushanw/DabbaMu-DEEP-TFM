@@ -158,7 +158,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
         print(f'** other opt dir is used from configs : {cfg.GENERAL.other_opt_dir}')
     else:
         other_opt_dir= 'adversarial_learning/swinIRwCustomUpwforward_support_files/opt.yaml'
-        print(f'** default other opt dir is used : {cfg.GENERAL.other_opt_dir}')
+        print(f'** default other opt dir is used : {other_opt_dir}')
 
 
     decoder= swinIR_generative_decoder(f'{project_dir}/{other_opt_dir}', cfg, modelA, modelH)

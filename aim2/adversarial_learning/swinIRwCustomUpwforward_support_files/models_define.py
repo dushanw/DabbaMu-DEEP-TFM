@@ -124,6 +124,8 @@ def init_weights(net, init_type='xavier_uniform', init_bn_type='uniform', gain=1
 class swinIR_generative_decoder(nn.Module):
     def __init__(self, opt_file_path= 'swinIR_support_files/opt.yaml', prev_cfg= None, modelA= None, modelH= None):
         super(swinIR_generative_decoder, self).__init__()
+    
+        self.prev_cfg= prev_cfg
 
         with open(opt_file_path, 'r') as file:
             opt = yaml.load(file)
@@ -243,11 +245,18 @@ class swinIR_generative_decoder(nn.Module):
         G_optim_params = []
         for k, v in self.netG.named_parameters():
             if v.requires_grad:
-                G_optim_params.append(v)
+                if k== 'modelH.weights':
+                    Ht_optim_params = [v]
+                    print(f'initial learning rate for : {k} -> {self.prev_cfg.MODEL.MODEL_H.lr_H}')
+                else:
+                    G_optim_params.append(v)
             else:
                 print('Params [{:s}] will not optimize.'.format(k))
+            
+        G_opt_lr= self.opt_train['G_optimizer_lr']
+        print(f'initial learning rate for : other params -> {G_opt_lr}')
 
-        self.G_optimizer = Adam(G_optim_params, lr=self.opt_train['G_optimizer_lr'], weight_decay=0)
+        self.G_optimizer = Adam([{'params':G_optim_params, 'lr':G_opt_lr}, {'params': Ht_optim_params, 'lr': self.prev_cfg.MODEL.MODEL_H.lr_H}], weight_decay=0)
         self.D_optimizer = Adam(self.netD.parameters(), lr=self.opt_train['D_optimizer_lr'], weight_decay=0)
 
     # ----------------------------------------
