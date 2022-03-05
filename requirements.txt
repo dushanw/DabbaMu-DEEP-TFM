@@ -1,1 +1,9 @@
+conda install -c conda-forge matplotlib
 pip install kornia
+pip install timm
+conda install scikit-image
+conda install -c pytorch ignite
+pip install pytorch-msssim
+conda install -c anaconda scipy
+conda install -c conda-forge yacs
+conda install -c anaconda h5py
