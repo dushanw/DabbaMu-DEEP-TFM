@@ -6,6 +6,8 @@ from PIL import Image
 import glob
 import random
 import h5py
+import random
+
 
 
 class mnistgrid_getdataset(torch.utils.data.Dataset):
@@ -296,7 +298,81 @@ class bbbcHumanMCF7cellsW4_getdataset(torch.utils.data.Dataset):
         return output
     
     
+class div2kflickr2k_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir_div2k= None, img_dir_flickr2k= None, num_samples= None):
+        super(div2kflickr2k_getdataset, self).__init__()
+        
+        self.type_ = type_
+
+        if self.type_== 'train':
+            img_list = glob.glob(f"{img_dir_div2k}/*.png") + glob.glob(f"{img_dir_flickr2k}/*.png")
+        else:
+            img_list = sorted(glob.glob(f"{img_dir_div2k}/*.png"))
+
+        print(f'total images found in: {self.type_} -> {len(img_list)}')
+        
+        np.random.seed(10)
+        np.random.shuffle(img_list)
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= 0
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        self.transform_train = torchvision.transforms.Compose([
+                                    #torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.RandomCrop(img_size),
+                                    torchvision.transforms.Grayscale(1),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        self.transform_valtest = torchvision.transforms.Compose([
+                                    #torchvision.transforms.Resize([img_size, img_size]),
+                                    torchvision.transforms.CenterCrop(img_size),
+                                    torchvision.transforms.Grayscale(1),
+                                    torchvision.transforms.ToTensor(),
+                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        
+    def __len__(self):
+        return len(self.img_list)
     
+    def __getitem__(self, idx):        
+        if self.type_== 'train':
+            img= self.transform_train(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8')))
+            mode = random.randint(0, 7)
+        else:
+            img= self.transform_valtest(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8')))
+            mode = idx%8
+        img= self.augment_img(img.permute(1,2,0), mode=mode).permute(2, 0, 1) ## augmentation is applied for train, val, test datasets -> because our goal: evaluate on other datasets
+        output = img, torch.tensor(1) 
+        return output
+
+    def augment_img(self, img, mode=0): #img: HWC
+        '''Kai Zhang (github: https://github.com/cszn)
+        '''
+        if mode == 0:
+            return img
+        elif mode == 1:
+            return torch.flipud(torch.rot90(img))
+        elif mode == 2:
+            return torch.flipud(img)
+        elif mode == 3:
+            return torch.rot90(img, k=3)
+        elif mode == 4:
+            return torch.flipud(torch.rot90(img, k=2))
+        elif mode == 5:
+            return torch.rot90(img)
+        elif mode == 6:
+            return torch.rot90(img, k=2)
+        elif mode == 7:
+            return torch.flipud(torch.rot90(img, k=3))
     
     
     

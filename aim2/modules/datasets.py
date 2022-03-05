@@ -107,3 +107,15 @@ def bbbcHumanMCF7cellsW4(img_size, delta, num_samples_train, num_samples_valtest
     
     return trainset, valset, testset
 
+def div2kflickr2k(img_size, delta, num_samples_train, num_samples_valtest):
+
+    data_div2k_train_dir = '../../../datasets/superres/div2k/DIV2K_train_HR'
+    data_div2k_val_dir = '../../../datasets/superres/div2k/DIV2K_valid_HR'
+    data_flickr_dir = '../../../datasets/superres/flickr2k/Flickr2K/Flickr2K_HR'
+
+    trainset = div2kflickr2k_getdataset(img_size, 'train', delta, data_div2k_train_dir, data_flickr_dir, num_samples_train)
+    valset= div2kflickr2k_getdataset(img_size, 'val', delta, data_div2k_val_dir, None, num_samples_valtest)
+    testset= valset
+    
+    return trainset, valset, testset
+
