@@ -107,6 +107,19 @@ def bbbcHumanMCF7cellsW4(img_size, delta, num_samples_train, num_samples_valtest
     
     return trainset, valset, testset
 
+def bbbcHumanMCF7cellsW4cropped(img_size, delta, num_samples_train, num_samples_valtest):
+
+    data_dir= '/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/bbbcHumanMCF7cells/preprocessed/w4'
+    if not os.path.isdir(data_dir):
+        data_dir= '/home/udith/udith_works/datasets/bbbcHumanMCF7cells/preprocessed/w4' # handle lab server
+
+    trainset = bbbcHumanMCF7cellsW4_getdataset(img_size, 'train', delta, data_dir, num_samples_train, is_crop= True)
+    valset= bbbcHumanMCF7cellsW4_getdataset(img_size, 'val', delta, data_dir, num_samples_valtest, is_crop= True)
+    testset= bbbcHumanMCF7cellsW4_getdataset(img_size, 'test', delta, data_dir, num_samples_valtest, is_crop= True)
+    
+    return trainset, valset, testset
+
+
 def div2kflickr2k(img_size, delta, num_samples_train, num_samples_valtest):
     data_dir= '../../../datasets/superres'
     if not os.path.isdir(data_dir):

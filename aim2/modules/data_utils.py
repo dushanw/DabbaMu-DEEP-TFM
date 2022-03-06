@@ -260,7 +260,7 @@ class bbbcHumanMCF7cellsW2_getdataset(torch.utils.data.Dataset):
     
 
 class bbbcHumanMCF7cellsW4_getdataset(torch.utils.data.Dataset):
-    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None, is_crop= False):
         super(bbbcHumanMCF7cellsW4_getdataset, self).__init__()
         
         self.type_ = type_
@@ -284,10 +284,22 @@ class bbbcHumanMCF7cellsW4_getdataset(torch.utils.data.Dataset):
         self.mean =-self.delta/(1-self.delta)
         self.std=1/(1-self.delta)
         
-        self.transform = torchvision.transforms.Compose([
-                                    torchvision.transforms.Resize([img_size, img_size]),
-                                    torchvision.transforms.ToTensor(),
-                                    torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        if not is_crop:        
+            self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.Resize([img_size, img_size]),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        else:
+            if self.type_== 'train':
+                self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.RandomCrop(img_size),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
+            else:
+                self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.CenterCrop(img_size),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
         
     def __len__(self):
         return len(self.img_list)
