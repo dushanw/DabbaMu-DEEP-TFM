@@ -142,8 +142,10 @@ def show_imgs(X, Ht, X_hat, yt, losses_train, losses_val, metrics_val, T, epoch,
         plt.close()
     else:plt.show()
     
-    img_grid_fake=torchvision.utils.make_grid(X_hat).permute(1,2,0).cpu().detach().numpy()
-    img_grid_real=torchvision.utils.make_grid(X).permute(1,2,0).cpu().detach().numpy()
+    n_samples = X_hat.shape[0]
+    if n_samples>32:n_samples= 32
+    img_grid_fake=torchvision.utils.make_grid(X_hat[:n_samples]).permute(1,2,0).cpu().detach().numpy()
+    img_grid_real=torchvision.utils.make_grid(X[:n_samples]).permute(1,2,0).cpu().detach().numpy()
 
     plt.figure(figsize=(15,3)) #(length, height)
     plt.subplot(1,2,1)
