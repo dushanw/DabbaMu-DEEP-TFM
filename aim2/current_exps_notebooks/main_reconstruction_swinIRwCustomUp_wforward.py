@@ -96,8 +96,7 @@ def safe_do_exps(exps_dict= None, general_opts= None, device= None, exp_dir = '.
                 print(f'\nFolder length is too long: len(results_saving_folder) -> {len(save_folder_name)} (<= 255)')
                 print(save_folder_name)
 
-            run(opts= opts, save_special=save_special)
-            '''
+            #run(opts= opts, save_special=save_special)
             try:
                 if save_dir_special_root==None:
                     save_dir_special_root= exp_dir
@@ -108,7 +107,7 @@ def safe_do_exps(exps_dict= None, general_opts= None, device= None, exp_dir = '.
                 error_file_name = f'{exp_dir}/errors.txt'
                 write_errormsg2file(f'ERROR : {save_dir}\n {e} \n\n', error_file_name)
                 print(f'ERROR : {save_dir}\n {e} \n\n')
-            '''
+                
     print(f'\n\nCOUNT ONLY (no exps running/ deleting) : {count_only}')
     print('count_already_trained (tot_epochs completed): ', count_already_trained)
     print('count_train_from_begining : ', count_train_from_begining)
