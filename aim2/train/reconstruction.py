@@ -52,6 +52,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     get_dataset_func= eval(cfg.DATASET.name)
     img_size= cfg.DATASET.img_size
     num_samples_train= cfg.DATASET.num_samples_train
+    num_samples_valtest= cfg.DATASET.num_samples_valtest
     delta=cfg.DATASET.delta
     batch_size_train= cfg.DATASET.batch_size_train
     batch_size_valtest= cfg.DATASET.batch_size_valtest
@@ -121,7 +122,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
        
     ########################################################################
     
-    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train)
+    trainset, valset, testset = get_dataset_func(img_size= img_size, delta= delta, num_samples_train= num_samples_train, num_samples_valtest= num_samples_valtest)
     
     if cfg.DATASET.name == 'confocal' or cfg.DATASET.name == 'neuronal' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW2' or cfg.DATASET.name== 'bbbcHumanMCF7cellsW4':drop_last_val_test= True ## the last batch of confocal data haas only 1 image, it lead to an error
     
