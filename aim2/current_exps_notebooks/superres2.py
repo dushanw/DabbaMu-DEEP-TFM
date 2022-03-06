@@ -12,8 +12,8 @@ lr_H, T, lambda_s, batch_size= ['1.0', '1', '3', '128']
 #lr_H, T, lambda_s, batch_size= ['1.0', '4', '4', '10']
 
 
-name= 'div2kflickr2k'
-device = 'cuda:0'
+name= 'div2kflickr2k_learnableTheirUp'
+device = 'cuda:1'
 
 ###################################
 
@@ -26,14 +26,14 @@ exps = {
         'MODEL.MODEL_A.lambda_scale_factor': [lambda_s],
     
         'DATASET.img_size':  ['64'],  #fixed
-        'DATASET.num_samples_train': ['150'],  #'3450' fixed
-        'DATASET.num_samples_valtest': ['150'], #'100' fixed
+        'DATASET.num_samples_train': ['3450'],  #'3450' fixed
+        'DATASET.num_samples_valtest': ['100'], #'100' fixed
 }
 
 general_opts=  ['DATASET.batch_size_valtest', batch_size,
                 'DATASET.batch_size_train', batch_size,
-                'TRAIN.show_results_epoch', '1', #5  #fixed
-                'TRAIN.epochs', '3']  #150  #fixed
+                'TRAIN.show_results_epoch', '5', #5  #fixed
+                'TRAIN.epochs', '150']  #150  #fixed
 
 
 exp_dir= f'../figs/{name}' #'/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/results/aim2/figs'

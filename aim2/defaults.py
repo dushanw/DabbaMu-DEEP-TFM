@@ -16,6 +16,7 @@ _C.DATASET.num_samples_train= 600
 _C.DATASET.num_samples_valtest= 600
 _C.DATASET.delta=0.000001
 _C.DATASET.batch_size_train= 32
+_C.DATASET.batch_size_valtest= 25
 _C.DATASET.img_channels=1
 
 _C.TRAIN = CN()

@@ -54,6 +54,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     num_samples_train= cfg.DATASET.num_samples_train
     delta=cfg.DATASET.delta
     batch_size_train= cfg.DATASET.batch_size_train
+    batch_size_valtest= cfg.DATASET.batch_size_valtest
     img_channels= cfg.DATASET.img_channels
 
     # train params:
@@ -126,7 +127,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     
     else:drop_last_val_test= False
         
-    train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train, drop_last_val_test= drop_last_val_test, batch_size_valtest= 25)
+    train_loader, val_loader, test_loader = return_dataloaders(trainset, valset, testset, batch_size_train= batch_size_train, drop_last_val_test= drop_last_val_test, batch_size_valtest= batch_size_valtest)
     
     ###
     
