@@ -30,7 +30,7 @@ exps = {
         'DATASET.num_samples_valtest': ['100'], #'100' fixed
 }
 
-general_opts=  ['DATASET.batch_size_valtest', batch_size,
+general_opts=  ['DATASET.batch_size_valtest', 100,
                 'DATASET.batch_size_train', batch_size,
                 'TRAIN.show_results_epoch', '5', #5  #fixed
                 'TRAIN.epochs', '150']  #150  #fixed

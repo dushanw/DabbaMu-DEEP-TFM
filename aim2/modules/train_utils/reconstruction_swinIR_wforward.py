@@ -108,15 +108,17 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
                 class_acc_on_real, class_acc_on_fake=None, None
             show_imgs(X_val, Ht_val, X_hat_val, yt_down_val, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m) 
             
-        if epoch== epochs:
+        if epoch== epochs or epoch== 1:
+            print(f'special saving settings : {save_special_bool} | {save_dir_special}')
             if save_special_bool==True and save_dir_special != None:
+                print('special saving started !!!')
                 
                 save_special_dir= f'{save_dir_special}/save_special'
             
                 try:os.mkdir(save_special_dir)
                 except:pass
             
-                print(save_special_dir)
+                print('special save dir : ', save_special_dir)
                 
                 save_special(X_val, Ht_val, X_hat_val, yt_down_val, epoch, save_special_dir)                
                 
@@ -138,7 +140,8 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
                     #'opt_Ht_state_dict': opt[1].state_dict(),
                     }, f'{save_special_dir}/latest_model.pth')
                 
-                
+            else:
+                print('special saving not started !!!')
         
             
             
