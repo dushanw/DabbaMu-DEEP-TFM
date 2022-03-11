@@ -12,7 +12,7 @@ from main_reconstruction_swinIRwCustomUp_wforward import safe_do_exps # our_upsa
 lr_H, T, lambda_s, batch_size= ['1.0', '4', '4', '10']
 
 
-name= 'div2kflickr2k_learnableOurUp'
+name= 'div2kflickr2k_learnableOurUp_'
 device = 'cuda:0'
 
 ###################################
