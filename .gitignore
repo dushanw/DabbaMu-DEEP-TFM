@@ -10,3 +10,4 @@ errors.txt
 
 aim2/current_exps_notebooks/*_[0-9]*.ipynb
 aim2/current_exps_notebooks/*/*_[0-9]*.ipynb
+*.zip
