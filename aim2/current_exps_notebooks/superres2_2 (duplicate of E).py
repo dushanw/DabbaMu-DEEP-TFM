@@ -1,18 +1,18 @@
 #random_illum [lr_H= 0.0]
-#from main_reconstruction_swinIR import safe_do_exps # their_upsample [T=1, lambda_s= 3]
-#lr_H, T, lambda_s, batch_size= ['0.0', '1', '3', '128']
+from main_reconstruction_swinIR import safe_do_exps # their_upsample [T=1, lambda_s= 3]
+lr_H, T, lambda_s, batch_size= ['0.0', '1', '3', '128']
 #from main_reconstruction_swinIRwCustomUp import safe_do_exps # our_upsample [T=4, lambda_s= 4]
 #lr_H, T, lambda_s, batch_size= ['0.0', '4', '4', '2']
 
 
 #learned illum [lr_H= 1.0] -> might be too high [DO EXPS TO FIND PROPER LR RANGE !!!]
-from main_reconstruction_swinIR_wforward import safe_do_exps # their_upsample [T=1, lambda_s= 3]
-lr_H, T, lambda_s, batch_size= ['1.0', '1', '3', '128']
+#from main_reconstruction_swinIR_wforward import safe_do_exps # their_upsample [T=1, lambda_s= 3]
+#lr_H, T, lambda_s, batch_size= ['1.0', '1', '3', '128']
 #from main_reconstruction_swinIRwCustomUp_wforward import safe_do_exps # our_upsample [T=4, lambda_s= 4]
 #lr_H, T, lambda_s, batch_size= ['1.0', '4', '4', '10']
 
 
-name= 'div2kflickr2k_learnableTheirUp_'
+name= 'div2kflickr2k_nolearnableTheirUp'
 device = 'cuda:1'
 
 ###################################
