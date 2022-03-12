@@ -1,7 +1,7 @@
 
 from main_reconstruction_swinIRwCustomUp_wforward import safe_do_exps
 
-name= 'bbbcHumanMCF7cellsW4_swinIRwCustomV2_EvalHtOurUpsample_cropped64_changedCustomSig'
+name= 'bbbcHumanMCF7cellsW4_swinIRwCustomV2_EvalHtOurUpsample_cropped64_changedCustomSig2'
 
 exp_dir= f'../figs/{name}' #'/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/results/aim2/figs'
 save_dir_special_root = f'../figs/{name}' #f'/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/results/aim2/figs/{name}'
@@ -37,6 +37,6 @@ exps = {
 general_opts= ['DATASET.batch_size_train', '10',
                'DATASET.batch_size_valtest', '10',
                'TRAIN.show_results_epoch', '5', #5
-                'TRAIN.epochs', '230']  #150
+                'TRAIN.epochs', '219']  #150
 
 safe_do_exps(exps, general_opts, device, exp_dir = exp_dir, save_special= True, count_only= count_only, save_dir_special_root= save_dir_special_root)

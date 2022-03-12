@@ -61,4 +61,3 @@ _C.MODEL.MODEL_DECODER.connect_forward_inverse = 'no_skips'
 
 def get_cfg_defaults():
     return _C.clone()
-
