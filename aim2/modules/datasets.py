@@ -141,6 +141,8 @@ def bloodvesselsDeepTFM6sls(img_size, delta, num_samples_train, num_samples_valt
 
     #data_dir= '/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/bloodvesselsDeepTFM6sls'
     data_dir= '/n/holyscratch01/wadduwage_lab/uom_Udith/datasets/bloodvesselsDeepTFM6sls'
+    if not os.path.isdir(data_dir):
+        data_dir= 'add'
     
     trainset = bloodvesselsDeepTFM6sls_getdataset(img_size, 'train', delta, data_dir, num_samples_train, is_crop= True)
     valset= bloodvesselsDeepTFM6sls_getdataset(img_size, 'val', delta, data_dir, num_samples_valtest, is_crop= True)
