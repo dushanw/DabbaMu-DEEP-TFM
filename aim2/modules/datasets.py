@@ -42,7 +42,7 @@ def mnistdigits_grid2patch(img_size, delta, num_samples_train, num_samples_valte
 
 
 def confocal(img_size, delta, num_samples_train, num_samples_valtest=None):
-    data_dir= "/n/holyscratch01/wadduwage_lab/uom_Udith/datasets/confocal/63xZseriesSmall_w1/"
+    data_dir= "/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/confocal/63xZseriesSmall_w1/"
     
     trainset = confocal_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
     valset= confocal_getdataset(img_size, 'val', delta, data_dir)
@@ -53,7 +53,8 @@ def confocal(img_size, delta, num_samples_train, num_samples_valtest=None):
 
 
 def confocal_segment(img_size, delta, num_samples_train, num_samples_valtest=None):
-    data_dir= "/n/holyscratch01/wadduwage_lab/confocal_w1_segmentation_dataset"
+    #data_dir= "/n/holyscratch01/wadduwage_lab/confocal_w1_segmentation_dataset"
+    data_dir= "/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/confocal_w1_segmentation_dataset"
     
     trainset = confocal_seg_getdataset(img_size, 'train', delta, data_dir, num_samples_train)
     valset= confocal_seg_getdataset(img_size, 'val', delta, data_dir)
@@ -132,6 +133,18 @@ def div2kflickr2k(img_size, delta, num_samples_train, num_samples_valtest):
     trainset = div2kflickr2k_getdataset(img_size, 'train', delta, data_div2k_train_dir, data_flickr_dir, num_samples_train)
     valset= div2kflickr2k_getdataset(img_size, 'val', delta, data_div2k_val_dir, None, num_samples_valtest)
     testset= valset
+    
+    return trainset, valset, testset
+
+
+def bloodvesselsDeepTFM6sls(img_size, delta, num_samples_train, num_samples_valtest):
+
+    #data_dir= '/n/holylfs/LABS/wadduwage_lab/Lab/uom_Udith/datasets/bloodvesselsDeepTFM6sls'
+    data_dir= '/n/holyscratch01/wadduwage_lab/uom_Udith/datasets/bloodvesselsDeepTFM6sls'
+    
+    trainset = bloodvesselsDeepTFM6sls_getdataset(img_size, 'train', delta, data_dir, num_samples_train, is_crop= True)
+    valset= bloodvesselsDeepTFM6sls_getdataset(img_size, 'val', delta, data_dir, num_samples_valtest, is_crop= True)
+    testset= bloodvesselsDeepTFM6sls_getdataset(img_size, 'test', delta, data_dir, num_samples_valtest, is_crop= True)
     
     return trainset, valset, testset
 

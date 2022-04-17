@@ -388,6 +388,56 @@ class div2kflickr2k_getdataset(torch.utils.data.Dataset):
     
     
     
+class bloodvesselsDeepTFM6sls_getdataset(torch.utils.data.Dataset):
+    def __init__(self, img_size= 32, type_= 'train', delta=0, img_dir= None, num_samples= None, is_crop= True):
+        super(bloodvesselsDeepTFM6sls_getdataset, self).__init__()
+        
+        self.type_ = type_
+        
+        img_list = sorted(glob.glob(f"{img_dir}/{self.type_}/*.png"))
+        print(f'total images found in: {img_dir}/{self.type_} -> {len(img_list)}')
+        
+        np.random.seed(10)
+        np.random.shuffle(img_list)
+        
+        if num_samples==None:num_samples=len(img_list)
+            
+        if len(img_list)<num_samples:
+            print(f'WARNING -> Dataset: len(images) < num_samples -> num_samples will be neglected !!!')
+            self.img_list= img_list
+        else:
+            self.img_list= img_list[:num_samples]
+        
+        self.delta= delta
+        
+        self.mean =-self.delta/(1-self.delta)
+        self.std=1/(1-self.delta)
+        
+        if not is_crop:        
+            self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.Resize([img_size, img_size]),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        else:
+            if self.type_== 'train':
+                self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.RandomCrop(img_size),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
+            else:
+                self.transform = torchvision.transforms.Compose([
+                                        torchvision.transforms.CenterCrop(img_size),
+                                        torchvision.transforms.ToTensor(),
+                                        torchvision.transforms.Normalize((self.mean,), (self.std,))])
+        
+    def __len__(self):
+        return len(self.img_list)
+    
+    def __getitem__(self, idx):
+        # clip from 0.5 and do min-max norm
+        output = self.transform(Image.fromarray((255*plt.imread(self.img_list[idx])).astype('uint8'))), torch.tensor(1) 
+        return output
+    
     
     
     
