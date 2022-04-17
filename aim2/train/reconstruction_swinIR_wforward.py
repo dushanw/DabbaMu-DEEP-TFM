@@ -80,6 +80,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     ## params to A
     sPSF= eval(cfg.MODEL.MODEL_A.sPSF)
     exPSF= eval(cfg.MODEL.MODEL_A.exPSF)
+    emPSF= eval(cfg.MODEL.MODEL_A.emPSF)
     
     noise=cfg.MODEL.MODEL_A.noise
     lambda_scale_factor=cfg.MODEL.MODEL_A.lambda_scale_factor # downsample
@@ -141,7 +142,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
                           activation = H_activation, init_method= H_init, 
                           enable_train=enable_train, lambda_scale_factor= lambda_scale_factor).to(device)
     
-    modelA= modelA_class(sPSF= sPSF.to(device), exPSF= exPSF.to(device), noise=noise, device = device, 
+    modelA= modelA_class(sPSF= sPSF.to(device), exPSF= exPSF.to(device), emPSF= emPSF.to(device), noise=noise, device = device, 
                          scale_factor=lambda_scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real,
                          readnoise_std= readnoise_std)
