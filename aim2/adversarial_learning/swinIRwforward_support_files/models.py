@@ -645,6 +645,7 @@ class SwinIR(nn.Module):
 
         self.modelA= kwargs['modelA']
         self.modelH= kwargs['modelH']
+        self.prev_cfg= kwargs['prev_cfg']
 
         num_in_ch = in_chans
         num_out_ch = in_chans
@@ -661,7 +662,7 @@ class SwinIR(nn.Module):
 
         #####################################################################################################
         ################################### 1, shallow feature extraction ###################################
-        self.conv_first = nn.Conv2d(num_in_ch, embed_dim, 3, 1, 1)
+        self.conv_first = nn.Conv2d(self.prev_cfg.MODEL.MODEL_H.T, embed_dim, 3, 1, 1)
 
         #####################################################################################################
         ################################### 2, deep feature extraction ######################################
