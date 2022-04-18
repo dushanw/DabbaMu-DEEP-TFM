@@ -642,6 +642,7 @@ class SwinIR(nn.Module):
                  use_checkpoint=False, upscale=2, img_range=1., upsampler='', resi_connection='1conv',
                  **kwargs):
         super(SwinIR, self).__init__()
+        prev_cfg= kwargs['prev_cfg']
         num_in_ch = in_chans
         num_out_ch = in_chans
         num_feat = 64
@@ -657,7 +658,7 @@ class SwinIR(nn.Module):
 
         #####################################################################################################
         ################################### 1, shallow feature extraction ###################################
-        self.conv_first = nn.Conv2d(num_in_ch, embed_dim, 3, 1, 1)
+        self.conv_first = nn.Conv2d(prev_cfg.MODEL.MODEL_H.T, embed_dim, 3, 1, 1)
 
         #####################################################################################################
         ################################### 2, deep feature extraction ######################################

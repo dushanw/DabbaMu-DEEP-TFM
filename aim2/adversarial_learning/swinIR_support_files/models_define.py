@@ -10,7 +10,7 @@ import yaml
 from adversarial_learning.swinIR_support_files.models import *
 from adversarial_learning.swinIR_support_files.losses import *
 
-def define_G(opt):
+def define_G(opt, prev_cfg):
     opt_net = opt['netG']
     netG = SwinIR(upscale=opt_net['upscale'],
                     in_chans=opt_net['in_chans'],
@@ -22,7 +22,7 @@ def define_G(opt):
                     num_heads=opt_net['num_heads'],
                     mlp_ratio=opt_net['mlp_ratio'],
                     upsampler=opt_net['upsampler'],
-                    resi_connection=opt_net['resi_connection'])
+                    resi_connection=opt_net['resi_connection'], prev_cfg= prev_cfg)
     if opt['is_train']:
         init_weights(netG,
                         init_type=opt_net['init_type'],
@@ -127,13 +127,13 @@ class swinIR_generative_decoder(nn.Module):
         self.schedulers = []                   # schedulers
 
         self.opt_train = self.opt['train']    # training option
-        self.netG = define_G(opt)
+        self.netG = define_G(opt, prev_cfg)
         self.netG = self.model_to_device(self.netG)
         if self.is_train:
             self.netD = define_D(opt)
             self.netD = self.model_to_device(self.netD)
             if self.opt_train['E_decay'] > 0:
-                self.netE = define_G(opt).to(self.device).eval()
+                self.netE = define_G(opt, prev_cfg).to(self.device).eval()
 
     def update_learning_rate(self, n):
         for scheduler in self.schedulers:

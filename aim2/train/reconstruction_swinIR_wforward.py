@@ -151,7 +151,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     if os.path.isdir('/n/home06/udithhaputhanthri/project_udith/aim2'):
         project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
     else:
-        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
+        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM-deepTFMExps/DabbaMu-DEEP-TFM/aim2' # handle lab server
 
     if cfg.GENERAL.other_opt_dir !=None:
         other_opt_dir= cfg.GENERAL.other_opt_dir

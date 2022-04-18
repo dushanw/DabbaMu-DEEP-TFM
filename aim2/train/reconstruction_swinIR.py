@@ -80,6 +80,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     ## params to A
     sPSF= eval(cfg.MODEL.MODEL_A.sPSF)
     exPSF= eval(cfg.MODEL.MODEL_A.exPSF)
+    emPSF= eval(cfg.MODEL.MODEL_A.emPSF)
     
     noise=cfg.MODEL.MODEL_A.noise
     lambda_scale_factor=cfg.MODEL.MODEL_A.lambda_scale_factor # downsample
@@ -141,7 +142,7 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
                           activation = H_activation, init_method= H_init, 
                           enable_train=enable_train, lambda_scale_factor= lambda_scale_factor).to(device)
     
-    modelA= modelA_class(sPSF= sPSF.to(device), exPSF= exPSF.to(device), noise=noise, device = device, 
+    modelA= modelA_class(sPSF= sPSF.to(device), exPSF= exPSF.to(device), emPSF= emPSF.to(device), noise=noise, device = device, 
                          scale_factor=lambda_scale_factor, rotation_lambda=rotation_lambda, 
                          shift_lambda_real= shift_lambda_real,
                          readnoise_std= readnoise_std)
@@ -150,9 +151,21 @@ def run(config_file=None, opts=None, save_special=False, save_dir_special= None)
     if os.path.isdir('/n/home06/udithhaputhanthri/project_udith/aim2'):
         project_dir= '/n/home06/udithhaputhanthri/project_udith/aim2'
     else:
-        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM/aim2' # handle lab server
-    decoder= swinIR_generative_decoder(f'{project_dir}/adversarial_learning/swinIR_support_files/opt.yaml', cfg)
+        project_dir='/home/udith/udith_works/DabbaMu-DEEP-TFM-deepTFMExps/DabbaMu-DEEP-TFM/aim2' # handle lab server
+
+    if cfg.GENERAL.other_opt_dir !=None:
+        other_opt_dir= cfg.GENERAL.other_opt_dir
+        print(f'** other opt dir is used from configs : {cfg.GENERAL.other_opt_dir}')
+    else:
+        other_opt_dir= 'adversarial_learning/swinIRwforward_support_files/opt.yaml'
+        print(f'** default other opt dir is used : {other_opt_dir}')
+
+
+
+    decoder= swinIR_generative_decoder(f'{project_dir}/{other_opt_dir}', cfg)
     decoder.init_train()
+
+    
 
     opt_H= torch.optim.Adam(modelH.parameters(), lr= lr_H)
     opt_decoder= None #defined inside the SwinIR decoder model

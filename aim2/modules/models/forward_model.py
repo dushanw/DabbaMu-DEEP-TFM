@@ -12,13 +12,14 @@ def fft_conv2d(X, filter_, **args): # X.shape: (b, 1, m, m), filter_.shape: (1, 
     a, b, c, d= (f-m)//2 + 1, (f-m)//2, (f-m)//2 + 1, (f-m)//2
     
     X= torch.nn.functional.pad(X, (a, b, c, d)) # make X.shape= filter_.shape [note: filter_ is larger than image]
-    X = torch.fft.fftshift(torch.fft.fft2(torch.fft.ifftshift(X)))
-    filter_ = torch.fft.fftshift(torch.fft.fft2(torch.fft.ifftshift(filter_)))
-    X = X * filter_
-    X = torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(X)))
+    X_fft = torch.fft.fftshift(torch.fft.fft2(torch.fft.ifftshift(X)))
+    filter_fft = torch.fft.fftshift(torch.fft.fft2(torch.fft.ifftshift(filter_)))
+    X_fft = X_fft * filter_fft
+    X_ifft = torch.fft.fftshift(torch.fft.ifft2(torch.fft.ifftshift(X_fft)))
     
-    X= X[:, c:-d, a:-b] ## c+1: -d+1 instead c: -d -> because, freq-domain mult. shift the image (DO NOT KNOW WHY??)
-    return X.abs().unsqueeze(dim= 1) # shape: (b, 1, m, m)
+    X_ifft= X_ifft[:, c:-d, a:-b] ## c+1: -d+1 instead c: -d -> because, freq-domain mult. shift the image (DO NOT KNOW WHY??)
+    out= X_ifft.abs().unsqueeze(dim= 1).float() # shape: (b, 1, m, m)
+    return out
 
 
 
@@ -78,6 +79,7 @@ class modelA_class:
         exPSF= exPSF.view(1, 1, exPSF.shape[0], exPSF.shape[1])
         emPSF= emPSF.view(1, 1, emPSF.shape[0], emPSF.shape[1])
 
+        #def special_Conv2d(x, psf, padding, conv_func):return x
         A1= special_Conv2d(Ht, exPSF, padding= padding_expsf, conv_func= conv_func)*X
         A2= special_Conv2d(A1, sPSF, padding= padding_spsf, conv_func= conv_func)
         yt= special_Conv2d(A2, emPSF, padding= padding_empsf, conv_func= conv_func)

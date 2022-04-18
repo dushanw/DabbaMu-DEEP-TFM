@@ -114,7 +114,7 @@ def train(model_decoder, model_decoder_upsample, model_A, model_H, connect_forwa
                 class_acc_on_real, class_acc_on_fake=None, None
             show_imgs(X_val, Ht_val, X_hat_val, yt_down_val, losses_train, losses_val, metrics_val, T, epoch, class_acc_on_real, class_acc_on_fake, save_dir, m) 
             
-        if epoch== epochs or epoch== 1:
+        if epoch== epochs or epoch== 1 or epoch==100 or epoch==120  or epoch==130  or epoch==140:
             if save_special_bool==True and save_dir_special != None:
                 
                 save_special_dir= f'{save_dir_special}/save_special'
